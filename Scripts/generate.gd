@@ -1,24 +1,52 @@
 extends Node2D
 
 var terrain_noise = FastNoiseLite.new()
+var coal_ore_noise = FastNoiseLite.new()
+var iron_ore_noise = FastNoiseLite.new()
 var generated_blocks = {}
 var updated_blocks = {}
 var erase
 var erase_background
 var atlas
 var atlas_background
+var coal_ore_atlas = Vector2i(0, 0)
 var dirt_atlas = Vector2i(1, 0)
 var grass_atlas = Vector2i(2, 0)
+var iron_ore_atlas = Vector2i(3, 0)
 var stone_atlas = Vector2i(4, 0)
 var player
 var world_seed
 var spawnpoint
+var coal_ore_thresh: float = -0.91
+var coal_ore_rarity: int = 25
+var iron_ore_thresh: float = -0.95
+var iron_ore_rarity: int = 50
+var initialised = false
+var rng = RandomNumberGenerator.new()
 
 func _ready() -> void:
 	if multiplayer.is_server():
 		world_seed = randi()
 		terrain_noise.seed = world_seed
 		spawnpoint = Vector2(8, terrain_noise.get_noise_1d(0) * 16)
+		
+func initialise():
+	terrain_noise.seed = world_seed
+	rng.seed = world_seed
+	
+	coal_ore_noise.seed = rng.randi()
+	coal_ore_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	coal_ore_noise.fractal_type = FastNoiseLite.FRACTAL_NONE
+	coal_ore_noise.domain_warp_enabled = true
+	coal_ore_noise.domain_warp_amplitude = 15
+	
+	rng.seed = coal_ore_noise.seed
+	
+	iron_ore_noise.seed = rng.randi()
+	iron_ore_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	iron_ore_noise.fractal_type = FastNoiseLite.FRACTAL_NONE
+	iron_ore_noise.domain_warp_enabled = true
+	iron_ore_noise.domain_warp_amplitude = 15
 
 func gen_surface_terrain(x: int, y: int) -> void:
 	var terrain_height: float = terrain_noise.get_noise_1d(x) * 16
@@ -31,6 +59,17 @@ func gen_surface_terrain(x: int, y: int) -> void:
 	if erase: erase_background = true
 	else: atlas_background = atlas
 	if atlas_background == grass_atlas: atlas_background = dirt_atlas
+
+func gen_ores(x: int, y: int) -> void:
+	coal_ore_noise.frequency = 1.0 / coal_ore_rarity
+	iron_ore_noise.frequency = 1.0 / iron_ore_rarity
+	
+	if coal_ore_noise.get_noise_2d(x, y) < coal_ore_thresh: atlas = coal_ore_atlas
+	elif iron_ore_noise.get_noise_2d(x, y) < iron_ore_thresh: atlas = iron_ore_atlas
+	
+func gen_caves(x: int, y: int) -> void:
+	terrain_noise.frequency = 0.004
+	if terrain_noise.get_noise_2d(x * 4, y * 4) > 0.4: erase = true
 	
 func generate() -> void:
 		var camera: Camera2D = player.get_node("Camera")
@@ -48,11 +87,16 @@ func generate() -> void:
 					if !updated_blocks.has(block):
 						terrain_noise.frequency = 0.01
 						gen_surface_terrain(x, y)
+						if atlas == stone_atlas: gen_ores(x, y)
+						gen_caves(x, y)
 						if erase: $Foreground_Blocks.erase_cell(block)
 						else: $Foreground_Blocks.set_cell(block, 0, atlas)
+						if erase_background: $Background_Blocks.erase_cell(block)
+						else: $Background_Blocks.set_cell(block, 0, atlas_background)
 					
 func _process(_delta: float) -> void:
 	if NetworkManager.Ncache.has("world_seed"): world_seed = NetworkManager.Ncache["world_seed"]
 	if world_seed and player:
-		terrain_noise.seed = world_seed
+		if not initialised:
+			initialise()
 		generate()

@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://dkadvdqruus1b"]
+[gd_scene load_steps=5 format=3 uid="uid://dkadvdqruus1b"]
 
-[ext_resource type="Script" uid="uid://bbn6xdh1kifo0" path="res://Scenes/console.gd" id="1_n5ki7"]
+[ext_resource type="Script" uid="uid://bbn6xdh1kifo0" path="res://Scripts/console.gd" id="1_n5ki7"]
+[ext_resource type="FontFile" uid="uid://n1art4b3xn17" path="res://Fonts/Bladetype.ttf" id="2_2gegc"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0jqip"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ri8bq"]
 
 [node name="Viewport" type="Camera2D"]
 script = ExtResource("1_n5ki7")
@@ -17,4 +22,21 @@ offset_right = 576.0
 offset_bottom = 324.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "SIGMMMAAAA"
+theme_override_constants/line_spacing = 2
+theme_override_fonts/font = ExtResource("2_2gegc")
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxEmpty_0jqip")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_ri8bq")
+context_menu_enabled = false
+emoji_menu_enabled = false
+scroll_past_end_of_file = true
+
+[node name="Background" type="ColorRect" parent="Console"]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.201527, 0.201527, 0.201527, 1)

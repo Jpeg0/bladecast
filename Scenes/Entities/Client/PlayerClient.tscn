@@ -1,4 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://cbv8cj81f8t47"]
+[gd_scene load_steps=4 format=3 uid="uid://cbv8cj81f8t47"]
+
+[ext_resource type="Script" uid="uid://d28fm4b04l585" path="res://Scenes/Entities/Client/player_client.gd" id="1_ue2qu"]
 
 [sub_resource type="Gradient" id="Gradient_s3enu"]
 offsets = PackedFloat32Array(1)
@@ -10,6 +12,7 @@ width = 24
 height = 56
 
 [node name="PlayerClient" type="Node2D"]
+script = ExtResource("1_ue2qu")
 
 [node name="Texture" type="Sprite2D" parent="."]
 texture = SubResource("GradientTexture2D_ue2qu")

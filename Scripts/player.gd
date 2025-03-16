@@ -7,6 +7,7 @@ var foreground_blocks
 var background_blocks
 var root: Node2D
 var soft_collision_velocity = Vector2()
+var zoom
 
 func _ready() -> void:
 	set_multiplayer_authority(multiplayer.get_unique_id())
@@ -26,6 +27,17 @@ func block_clicked():
 	block_pos = foreground_blocks.local_to_map(mouse_pos)
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 		NetworkManager.send_block_update(1, true, block_pos, null)
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		NetworkManager.send_block_update(1, false, block_pos, Vector2i(1, 0))
+		
+func camera_zoom() -> void:
+	zoom = $Camera.zoom
+	if Input.is_action_just_released("Scroll_Up"): zoom += zoom / 10
+	elif Input.is_action_just_released("Scroll_Down"): zoom -= zoom / 10
+	
+	zoom = zoom.clamp(Vector2(0.1, 0.1), Vector2(10, 10))
+	$Camera.zoom = zoom
+	$Camera.scale = Vector2(DisplayServer.window_get_size().y / 1080.0, DisplayServer.window_get_size().x / 1920.0) / zoom
 		
 func soft_collision():
 	for entity in root.get_node("Entities").get_children() + root.get_node("Players").get_children():
@@ -38,6 +50,7 @@ func soft_collision():
 func _process(delta: float) -> void:
 	player_movement(delta)
 	block_clicked()
+	camera_zoom()
 	soft_collision()
 	velocity += soft_collision_velocity
 	move_and_slide()
