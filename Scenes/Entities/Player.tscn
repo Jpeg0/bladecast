@@ -1,0 +1,52 @@
+[gd_scene load_steps=7 format=3 uid="uid://dg7s1fbyyh3f5"]
+
+[ext_resource type="Script" uid="uid://cembb0kqsswm4" path="res://Scripts/player.gd" id="1_3kvya"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2tapu"]
+size = Vector2(24, 56)
+
+[sub_resource type="Gradient" id="Gradient_v402d"]
+offsets = PackedFloat32Array(1)
+colors = PackedColorArray(1, 0, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_agccv"]
+gradient = SubResource("Gradient_v402d")
+width = 24
+height = 56
+
+[sub_resource type="Gradient" id="Gradient_3kvya"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.844156)
+colors = PackedColorArray(0, 0, 0, 0, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_v402d"]
+gradient = SubResource("Gradient_3kvya")
+width = 16
+height = 16
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1_3kvya")
+
+[node name="Hitbox" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_2tapu")
+
+[node name="Texture" type="Sprite2D" parent="."]
+texture = SubResource("GradientTexture2D_agccv")
+
+[node name="Camera" type="Camera2D" parent="."]
+
+[node name="Sky" type="ColorRect" parent="Camera"]
+z_index = -1
+offset_left = -576.0
+offset_top = -324.0
+offset_right = 576.0
+offset_bottom = 324.0
+color = Color(0.376471, 0.666667, 0.839216, 1)
+
+[node name="Selected_Block" type="TextureRect" parent="."]
+top_level = true
+offset_right = 32.0
+offset_bottom = 32.0
+texture = SubResource("GradientTexture2D_v402d")
