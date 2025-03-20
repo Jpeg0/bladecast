@@ -3,7 +3,7 @@ extends Node2D
 var terrain_noise = FastNoiseLite.new()
 var coal_ore_noise = FastNoiseLite.new()
 var iron_ore_noise = FastNoiseLite.new()
-var generated_blocks = {}
+var generated_chunks = {}
 var updated_blocks = {}
 var erase
 var erase_background
@@ -23,6 +23,10 @@ var iron_ore_thresh: float = -0.95
 var iron_ore_rarity: int = 50
 var initialised = false
 var rng = RandomNumberGenerator.new()
+var camera: Camera2D
+var chunk_size = 32
+var viewport_size: Vector2
+var cpos
 
 func _ready() -> void:
 	if multiplayer.is_server():
@@ -47,6 +51,9 @@ func initialise():
 	iron_ore_noise.fractal_type = FastNoiseLite.FRACTAL_NONE
 	iron_ore_noise.domain_warp_enabled = true
 	iron_ore_noise.domain_warp_amplitude = 15
+	camera = player.get_node("Camera")
+	initialised = true
+	player.get_node("Camera/HUD/Debug_Menu/Left/Seed").text = "seed: " + str(world_seed)
 
 func gen_surface_terrain(x: int, y: int) -> void:
 	var terrain_height: float = terrain_noise.get_noise_1d(x) * 16
@@ -71,32 +78,38 @@ func gen_caves(x: int, y: int) -> void:
 	terrain_noise.frequency = 0.004
 	if terrain_noise.get_noise_2d(x * 4, y * 4) > 0.4: erase = true
 	
+func force_generate(layer, block, x, y):
+	terrain_noise.frequency = 0.01
+	gen_surface_terrain(x, y)
+	if atlas == stone_atlas: gen_ores(x, y)
+	gen_caves(x, y)
+	if layer == "all":
+		if erase: $Foreground_Blocks.erase_cell(block)
+		else: $Foreground_Blocks.set_cell(block, 0, atlas)
+		if erase_background: $Background_Blocks.erase_cell(block)
+		else: $Background_Blocks.set_cell(block, 0, atlas_background)
+	elif layer == "foreground":
+		if erase: $Foreground_Blocks.erase_cell(block)
+		else: $Foreground_Blocks.set_cell(block, 0, atlas)
+	elif layer == "background":
+		if erase_background: $Background_Blocks.erase_cell(block)
+		else: $Background_Blocks.set_cell(block, 0, atlas_background)
+		
 func generate() -> void:
-		var camera: Camera2D = player.get_node("Camera")
-		var viewport_size: Vector2 = (get_viewport().get_visible_rect().size / camera.zoom) / 2
-		var cpos: Vector2 = camera.position + player.position
-		var generate_area_min: Vector2 = (cpos - viewport_size) / 16
-		var generate_area_max:Vector2 = (cpos + viewport_size) / 16
-		var block: Vector2i = Vector2i()
-		for x in range(generate_area_min.x - 2, generate_area_max.x + 2):
-			block.x = x
-			for y in range(generate_area_min.y - 2, generate_area_max.y + 2):
-				block.y = y
-				if !generated_blocks.has(block):
-					generated_blocks[block] = true
-					if !updated_blocks.has(block):
-						terrain_noise.frequency = 0.01
-						gen_surface_terrain(x, y)
-						if atlas == stone_atlas: gen_ores(x, y)
-						gen_caves(x, y)
-						if erase: $Foreground_Blocks.erase_cell(block)
-						else: $Foreground_Blocks.set_cell(block, 0, atlas)
-						if erase_background: $Background_Blocks.erase_cell(block)
-						else: $Background_Blocks.set_cell(block, 0, atlas_background)
+	for cx in range(floor((cpos.x - viewport_size.x) / chunk_size / 32) - 1, ceil((cpos.x + viewport_size.x) / chunk_size / 32) + 1):
+		for cy in range(floor((cpos.y - viewport_size.y) / chunk_size / 32) - 1, ceil((cpos.y + viewport_size.y) / chunk_size / 32) + 1):
+			var chunk = Vector2i(cx, cy)
+			if !generated_chunks.has(chunk):
+				generated_chunks[chunk] = true
+				for x in range(chunk.x * chunk_size, (chunk.x + 1) * chunk_size):
+					for y in range(chunk.y * chunk_size, (chunk.y + 1) * chunk_size):
+						var block = Vector2i(x, y)
+						if !updated_blocks.has(block):
+							force_generate("all", block, x, y)
+
 					
 func _process(_delta: float) -> void:
-	if NetworkManager.Ncache.has("world_seed"): world_seed = NetworkManager.Ncache["world_seed"]
+	if not world_seed and NetworkManager.Ncache.has("world_seed"): world_seed = NetworkManager.Ncache["world_seed"]
 	if world_seed and player:
 		if not initialised:
 			initialise()
-		generate()

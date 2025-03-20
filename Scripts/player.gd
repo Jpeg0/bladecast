@@ -8,36 +8,68 @@ var background_blocks
 var root: Node2D
 var soft_collision_velocity = Vector2()
 var zoom
+var selected_block_colliding = false
+var prev_pos = Vector2i()
+var chunk_size
+var current_pos
+var prev_zoom
 
 func _ready() -> void:
 	set_multiplayer_authority(multiplayer.get_unique_id())
 	root = get_tree().get_current_scene()
 	foreground_blocks = root.get_node("Blocks/Foreground_Blocks")
 	background_blocks = root.get_node("Blocks/Background_Blocks")
+	root.get_node("Blocks").viewport_size = get_viewport().get_visible_rect().size / $Camera.zoom / 2
+	root.get_node("Blocks").cpos = $Camera.position + position
+	root.get_node("Blocks").generate()
+	print(get_viewport().get_visible_rect().size / $Camera.zoom / 2)
+	print($Camera.position + position)
+	chunk_size = root.get_node("Blocks").chunk_size * 16
 	
 func player_movement(delta):
 	velocity.x = Input.get_axis("A", "D") * 128
-	if Input.is_action_pressed("Jump") and is_on_floor(): velocity.y = -256
-	if not is_on_floor(): velocity.y += delta * 640
+	if is_on_floor():
+		velocity.y = 0
+		if Input.is_action_pressed("Jump"):
+			velocity.y = -232
+		return
+	velocity.y += delta * 680
 	
 func block_clicked():
 	var mouse_pos: Vector2 = get_global_mouse_position()
-	if (mouse_pos - position).length() > player_reach: mouse_pos = position + (mouse_pos - position).normalized() * player_reach
-	$Selected_Block.position = round((mouse_pos - Vector2(16, 16)) / 32) * 32
-	block_pos = foreground_blocks.local_to_map(mouse_pos)
+	var offset_pos = mouse_pos - position
+	if offset_pos.length() > player_reach: mouse_pos = position + offset_pos.normalized() * player_reach
+	
+	block_pos = (mouse_pos / 32).floor() * 32
+	$Selected_Block.position = block_pos
+	
+	var mapped_pos = foreground_blocks.local_to_map(mouse_pos)
+	
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		NetworkManager.send_block_update(1, true, block_pos, null)
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
-		NetworkManager.send_block_update(1, false, block_pos, Vector2i(1, 0))
+		for block in Items.items.values():
+			if block.has("block") and block["block"]["atlas"] == foreground_blocks.get_cell_atlas_coords(mapped_pos):
+				$Camera/GUI.give_item(block["key"], 1)
+		NetworkManager.send_block_update(1, true, mapped_pos, null)
+	elif Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+		NetworkManager.send_block_update(1, false, mapped_pos, Vector2i(1, 0))
 		
 func camera_zoom() -> void:
-	zoom = $Camera.zoom
-	if Input.is_action_just_released("Scroll_Up"): zoom += zoom / 10
-	elif Input.is_action_just_released("Scroll_Down"): zoom -= zoom / 10
+	if Input.is_action_just_released("Scroll_Up"): zoom_in()
+	elif Input.is_action_just_released("Scroll_Down"): zoom_out()
 	
-	zoom = zoom.clamp(Vector2(0.1, 0.1), Vector2(10, 10))
+func zoom_in():
+	zoom = $Camera.zoom
+	zoom += zoom / 10
+	if zoom > Vector2(10, 10): zoom = Vector2(10, 10)
 	$Camera.zoom = zoom
-	$Camera.scale = Vector2(DisplayServer.window_get_size().y / 1080.0, DisplayServer.window_get_size().x / 1920.0) / zoom
+	$Camera.scale = Vector2(1, 1) / $Camera.zoom
+		
+func zoom_out():
+	zoom = $Camera.zoom
+	zoom -= zoom / 10
+	if zoom < Vector2(0.1, 0.1): zoom = Vector2(0.1, 0.1)
+	$Camera.zoom = zoom
+	$Camera.scale = Vector2(1, 1) / $Camera.zoom
 		
 func soft_collision():
 	for entity in root.get_node("Entities").get_children() + root.get_node("Players").get_children():
@@ -50,7 +82,14 @@ func soft_collision():
 func _process(delta: float) -> void:
 	player_movement(delta)
 	block_clicked()
-	camera_zoom()
 	soft_collision()
+	current_pos = Vector2i(position / chunk_size) * chunk_size
+	prev_zoom = zoom
+	if Input.is_action_pressed("Zoom"): camera_zoom()
+	if current_pos != prev_pos or zoom != prev_zoom:
+		root.get_node("Blocks").viewport_size = get_viewport().get_visible_rect().size / $Camera.zoom / 2
+		root.get_node("Blocks").cpos = $Camera.position + position
+		root.get_node("Blocks").generate()
+	prev_pos = current_pos
 	velocity += soft_collision_velocity
 	move_and_slide()

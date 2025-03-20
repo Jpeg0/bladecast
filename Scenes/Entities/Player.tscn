@@ -1,6 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://dg7s1fbyyh3f5"]
+[gd_scene load_steps=13 format=3 uid="uid://dg7s1fbyyh3f5"]
 
-[ext_resource type="Script" uid="uid://cembb0kqsswm4" path="res://Scripts/player.gd" id="1_3kvya"]
+[ext_resource type="Script" uid="uid://mxtrwvrx632y" path="res://Scripts/player.gd" id="1_agccv"]
+[ext_resource type="PackedScene" uid="uid://cq2wjfogcock5" path="res://Scenes/Slot.tscn" id="2_v402d"]
+[ext_resource type="Script" uid="uid://bm6ikew2fgko3" path="res://Scripts/gui.gd" id="3_yu0ev"]
+[ext_resource type="Script" uid="uid://cdckk37nkrt3t" path="res://Scripts/debug_menu.gd" id="4_86atj"]
+[ext_resource type="LabelSettings" uid="uid://giaqkosiiy3j" path="res://LabelSettings/Default.tres" id="5_86atj"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2tapu"]
 size = Vector2(24, 56)
@@ -13,18 +17,6 @@ colors = PackedColorArray(1, 0, 1, 1)
 gradient = SubResource("Gradient_v402d")
 width = 24
 height = 56
-
-[sub_resource type="Gradient" id="Gradient_3kvya"]
-interpolation_mode = 1
-offsets = PackedFloat32Array(0, 0.844156)
-colors = PackedColorArray(0, 0, 0, 0, 1, 1, 1, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_v402d"]
-gradient = SubResource("Gradient_3kvya")
-width = 16
-height = 16
-fill = 1
-fill_from = Vector2(0.5, 0.5)
 
 [sub_resource type="Gradient" id="Gradient_agccv"]
 interpolation_mode = 2
@@ -39,18 +31,24 @@ fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(0.5, 0)
 
+[sub_resource type="Gradient" id="Gradient_3kvya"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.844156)
+colors = PackedColorArray(0, 0, 0, 0, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_v402d"]
+gradient = SubResource("Gradient_3kvya")
+width = 16
+height = 16
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
 [node name="Player" type="CharacterBody2D"]
-z_index = -1
-script = ExtResource("1_3kvya")
-
-[node name="Hitbox" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_2tapu")
-
-[node name="Texture" type="Sprite2D" parent="."]
-texture = SubResource("GradientTexture2D_agccv")
+z_index = 1
+script = ExtResource("1_agccv")
 
 [node name="Camera" type="Camera2D" parent="."]
-scale = Vector2(0.6, 0.6)
+z_index = -2
 
 [node name="Sky" type="ColorRect" parent="Camera"]
 light_mask = 0
@@ -66,14 +64,351 @@ offset_right = 960.0
 offset_bottom = 540.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.376471, 0.666667, 0.839216, 1)
+color = Color(0.239174, 0.690075, 0.82446, 1)
+
+[node name="GUI" type="Control" parent="Camera"]
+z_index = 10
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("3_yu0ev")
+
+[node name="Inventory" type="Control" parent="Camera/GUI"]
+visible = false
+anchors_preset = 0
+
+[node name="Background" type="ColorRect" parent="Camera/GUI/Inventory"]
+light_mask = 0
+layout_mode = 0
+offset_left = -308.0
+offset_top = -104.0
+offset_right = 308.0
+offset_bottom = 104.0
+color = Color(0.4, 0.4, 0.4, 1)
+
+[node name="Slots" type="Control" parent="Camera/GUI/Inventory"]
+anchors_preset = 0
+
+[node name="1" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -304.0
+offset_top = -100.0
+offset_right = -240.0
+offset_bottom = -36.0
+
+[node name="2" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -236.0
+offset_top = -100.0
+offset_right = -172.0
+offset_bottom = -36.0
+
+[node name="3" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -168.0
+offset_top = -100.0
+offset_right = -104.0
+offset_bottom = -36.0
+
+[node name="4" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -100.0
+offset_top = -100.0
+offset_right = -36.0
+offset_bottom = -36.0
+
+[node name="5" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -32.0
+offset_top = -100.0
+offset_right = 32.0
+offset_bottom = -36.0
+
+[node name="6" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 36.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = -36.0
+
+[node name="7" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 104.0
+offset_top = -100.0
+offset_right = 168.0
+offset_bottom = -36.0
+
+[node name="8" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 172.0
+offset_top = -100.0
+offset_right = 236.0
+offset_bottom = -36.0
+
+[node name="9" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 240.0
+offset_top = -100.0
+offset_right = 304.0
+offset_bottom = -36.0
+
+[node name="10" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -304.0
+offset_top = -32.0
+offset_right = -240.0
+offset_bottom = 32.0
+
+[node name="11" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -236.0
+offset_top = -32.0
+offset_right = -172.0
+offset_bottom = 32.0
+
+[node name="12" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -168.0
+offset_top = -32.0
+offset_right = -104.0
+offset_bottom = 32.0
+
+[node name="13" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -100.0
+offset_top = -32.0
+offset_right = -36.0
+offset_bottom = 32.0
+
+[node name="14" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -32.0
+offset_top = -32.0
+offset_right = 32.0
+offset_bottom = 32.0
+
+[node name="15" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 36.0
+offset_top = -32.0
+offset_right = 100.0
+offset_bottom = 32.0
+
+[node name="16" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 104.0
+offset_top = -32.0
+offset_right = 168.0
+offset_bottom = 32.0
+
+[node name="17" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 172.0
+offset_top = -32.0
+offset_right = 236.0
+offset_bottom = 32.0
+
+[node name="18" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 240.0
+offset_top = -32.0
+offset_right = 304.0
+offset_bottom = 32.0
+
+[node name="19" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -304.0
+offset_top = 36.0
+offset_right = -240.0
+offset_bottom = 100.0
+
+[node name="20" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -236.0
+offset_top = 36.0
+offset_right = -172.0
+offset_bottom = 100.0
+
+[node name="21" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -168.0
+offset_top = 36.0
+offset_right = -104.0
+offset_bottom = 100.0
+
+[node name="22" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -100.0
+offset_top = 36.0
+offset_right = -36.0
+offset_bottom = 100.0
+
+[node name="23" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -32.0
+offset_top = 36.0
+offset_right = 32.0
+offset_bottom = 100.0
+
+[node name="24" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 36.0
+offset_top = 36.0
+offset_right = 100.0
+offset_bottom = 100.0
+
+[node name="25" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 104.0
+offset_top = 36.0
+offset_right = 168.0
+offset_bottom = 100.0
+
+[node name="26" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 172.0
+offset_top = 36.0
+offset_right = 236.0
+offset_bottom = 100.0
+
+[node name="27" parent="Camera/GUI/Inventory/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 240.0
+offset_top = 36.0
+offset_right = 304.0
+offset_bottom = 100.0
+
+[node name="HUD" type="Control" parent="Camera"]
+z_index = 10
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Hotbar" type="Control" parent="Camera/HUD"]
+anchors_preset = 0
+
+[node name="Background" type="ColorRect" parent="Camera/HUD/Hotbar"]
+light_mask = 0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -308.0
+offset_top = 468.0
+offset_right = 308.0
+offset_bottom = 540.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.4, 0.4, 0.4, 1)
+
+[node name="Slots" type="Control" parent="Camera/HUD/Hotbar"]
+anchors_preset = 0
+
+[node name="1" parent="Camera/HUD/Hotbar/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -304.0
+offset_top = 472.0
+offset_right = -240.0
+offset_bottom = 536.0
+
+[node name="2" parent="Camera/HUD/Hotbar/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -236.0
+offset_top = 472.0
+offset_right = -172.0
+offset_bottom = 536.0
+
+[node name="3" parent="Camera/HUD/Hotbar/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -168.0
+offset_top = 472.0
+offset_right = -104.0
+offset_bottom = 536.0
+
+[node name="4" parent="Camera/HUD/Hotbar/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -100.0
+offset_top = 472.0
+offset_right = -36.0
+offset_bottom = 536.0
+
+[node name="5" parent="Camera/HUD/Hotbar/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = -32.0
+offset_top = 472.0
+offset_right = 32.0
+offset_bottom = 536.0
+
+[node name="6" parent="Camera/HUD/Hotbar/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 36.0
+offset_top = 472.0
+offset_right = 100.0
+offset_bottom = 536.0
+
+[node name="7" parent="Camera/HUD/Hotbar/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 104.0
+offset_top = 472.0
+offset_right = 168.0
+offset_bottom = 536.0
+
+[node name="8" parent="Camera/HUD/Hotbar/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 172.0
+offset_top = 472.0
+offset_right = 236.0
+offset_bottom = 536.0
+
+[node name="9" parent="Camera/HUD/Hotbar/Slots" instance=ExtResource("2_v402d")]
+layout_mode = 1
+offset_left = 240.0
+offset_top = 472.0
+offset_right = 304.0
+offset_bottom = 536.0
+
+[node name="Debug_Menu" type="Control" parent="Camera/HUD"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("4_86atj")
+
+[node name="Left" type="VBoxContainer" parent="Camera/HUD/Debug_Menu"]
+layout_mode = 0
+offset_left = -958.333
+offset_top = -540.0
+offset_right = -906.333
+offset_bottom = -500.0
+scale = Vector2(0.125, 0.125)
+theme_override_constants/separation = 2
+
+[node name="Fps" type="Label" parent="Camera/HUD/Debug_Menu/Left"]
+layout_mode = 2
+text = "fps: 0"
+label_settings = ExtResource("5_86atj")
+
+[node name="Position" type="Label" parent="Camera/HUD/Debug_Menu/Left"]
+layout_mode = 2
+text = "position: 0, 0"
+label_settings = ExtResource("5_86atj")
+
+[node name="Seed" type="Label" parent="Camera/HUD/Debug_Menu/Left"]
+layout_mode = 2
+text = "seed: 0"
+label_settings = ExtResource("5_86atj")
+
+[node name="Hitbox" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_2tapu")
+
+[node name="Texture" type="Sprite2D" parent="."]
+texture = SubResource("GradientTexture2D_agccv")
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_g4oe6")
 
 [node name="Selected_Block" type="TextureRect" parent="."]
 top_level = true
 offset_right = 32.0
 offset_bottom = 32.0
 texture = SubResource("GradientTexture2D_v402d")
-
-[node name="PointLight2D" type="PointLight2D" parent="."]
-shadow_enabled = true
-texture = SubResource("GradientTexture2D_g4oe6")

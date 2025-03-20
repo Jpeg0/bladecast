@@ -1,0 +1,10 @@
+[gd_resource type="LabelSettings" load_steps=2 format=3 uid="uid://giaqkosiiy3j"]
+
+[ext_resource type="FontFile" uid="uid://n1art4b3xn17" path="res://Fonts/Bladetype.ttf" id="1_vm3qg"]
+
+[resource]
+font = ExtResource("1_vm3qg")
+font_size = 256
+shadow_size = 16
+shadow_color = Color(0.266667, 0.266667, 0.266667, 1)
+shadow_offset = Vector2(16, 16)
