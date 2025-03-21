@@ -13,17 +13,17 @@ var prev_pos = Vector2i()
 var chunk_size
 var current_pos
 var prev_zoom
+var gui
 
 func _ready() -> void:
 	set_multiplayer_authority(multiplayer.get_unique_id())
 	root = get_tree().get_current_scene()
 	foreground_blocks = root.get_node("Blocks/Foreground_Blocks")
 	background_blocks = root.get_node("Blocks/Background_Blocks")
+	gui = $Camera/GUI
 	root.get_node("Blocks").viewport_size = get_viewport().get_visible_rect().size / $Camera.zoom / 2
 	root.get_node("Blocks").cpos = $Camera.position + position
 	root.get_node("Blocks").generate()
-	print(get_viewport().get_visible_rect().size / $Camera.zoom / 2)
-	print($Camera.position + position)
 	chunk_size = root.get_node("Blocks").chunk_size * 16
 	
 func player_movement(delta):
@@ -40,18 +40,20 @@ func block_clicked():
 	var offset_pos = mouse_pos - position
 	if offset_pos.length() > player_reach: mouse_pos = position + offset_pos.normalized() * player_reach
 	
-	block_pos = (mouse_pos / 32).floor() * 32
-	$Selected_Block.position = block_pos
+	$Selected_Block.position = (mouse_pos / 32).floor() * 32
 	
-	var mapped_pos = foreground_blocks.local_to_map(mouse_pos)
-	
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		for block in Items.items.values():
-			if block.has("block") and block["block"]["atlas"] == foreground_blocks.get_cell_atlas_coords(mapped_pos):
-				$Camera/GUI.give_item(block["key"], 1)
-		NetworkManager.send_block_update(1, true, mapped_pos, null)
-	elif Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
-		NetworkManager.send_block_update(1, false, mapped_pos, Vector2i(1, 0))
+	if not get_viewport().gui_get_hovered_control():
+		var mapped_pos = foreground_blocks.local_to_map(mouse_pos)
+		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+			for block in Items.items.values():
+				if block.has("block") and block["block"]["atlas"] == foreground_blocks.get_cell_atlas_coords(mapped_pos):
+					$Camera/GUI.give_item(block["key"], 1, null)
+			NetworkManager.send_block_update(1, true, mapped_pos, null)
+		elif Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
+			if foreground_blocks.get_cell_source_id(mapped_pos) == -1 and gui.inventory[gui.selected_hotbar_slot].has("key") and Items.items[gui.inventory[gui.selected_hotbar_slot].key].has("block"):
+				gui.inventory[gui.selected_hotbar_slot].amount -= 1
+				NetworkManager.send_block_update(1, false, mapped_pos, Items.items[gui.inventory[gui.selected_hotbar_slot].key].block.atlas)
+				gui.update_slot(gui.selected_hotbar_slot)
 		
 func camera_zoom() -> void:
 	if Input.is_action_just_released("Scroll_Up"): zoom_in()
