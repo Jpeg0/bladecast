@@ -54,6 +54,7 @@ func initialise():
 	camera = player.get_node("Camera")
 	initialised = true
 	player.get_node("Camera/HUD/Debug_Menu/Left/Seed").text = "seed: " + str(world_seed)
+	generate()
 
 func gen_surface_terrain(x: int, y: int) -> void:
 	var terrain_height: float = terrain_noise.get_noise_1d(x) * 16
@@ -96,20 +97,19 @@ func force_generate(layer, block, x, y):
 		else: $Background_Blocks.set_cell(block, 0, atlas_background)
 		
 func generate() -> void:
-	for cx in range(floor((cpos.x - viewport_size.x) / chunk_size / 32) - 1, ceil((cpos.x + viewport_size.x) / chunk_size / 32) + 1):
-		for cy in range(floor((cpos.y - viewport_size.y) / chunk_size / 32) - 1, ceil((cpos.y + viewport_size.y) / chunk_size / 32) + 1):
-			var chunk = Vector2i(cx, cy)
-			if !generated_chunks.has(chunk):
-				generated_chunks[chunk] = true
-				for x in range(chunk.x * chunk_size, (chunk.x + 1) * chunk_size):
-					for y in range(chunk.y * chunk_size, (chunk.y + 1) * chunk_size):
-						var block = Vector2i(x, y)
-						if !updated_blocks.has(block):
-							force_generate("all", block, x, y)
+	if initialised:
+		for cx in range(floor((cpos.x - viewport_size.x) / chunk_size / 32) - 1, ceil((cpos.x + viewport_size.x) / chunk_size / 32) + 1):
+			for cy in range(floor((cpos.y - viewport_size.y) / chunk_size / 32) - 1, ceil((cpos.y + viewport_size.y) / chunk_size / 32) + 1):
+				var chunk = Vector2i(cx, cy)
+				if !generated_chunks.has(chunk):
+					generated_chunks[chunk] = true
+					for x in range(chunk.x * chunk_size, (chunk.x + 1) * chunk_size):
+						for y in range(chunk.y * chunk_size, (chunk.y + 1) * chunk_size):
+							var block = Vector2i(x, y)
+							if !updated_blocks.has(block):
+								force_generate("all", block, x, y)
 
 					
 func _process(_delta: float) -> void:
 	if not world_seed and NetworkManager.Ncache.has("world_seed"): world_seed = NetworkManager.Ncache["world_seed"]
-	if world_seed and player:
-		if not initialised:
-			initialise()
+	if world_seed and player and not initialised: initialise()

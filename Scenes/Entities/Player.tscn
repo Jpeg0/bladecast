@@ -50,6 +50,7 @@ script = ExtResource("1_agccv")
 
 [node name="Camera" type="Camera2D" parent="."]
 z_index = -2
+scale = Vector2(0.6, 0.6)
 
 [node name="Sky" type="ColorRect" parent="Camera"]
 light_mask = 0

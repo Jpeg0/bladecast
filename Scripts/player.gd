@@ -25,6 +25,8 @@ func _ready() -> void:
 	root.get_node("Blocks").cpos = $Camera.position + position
 	root.get_node("Blocks").generate()
 	chunk_size = root.get_node("Blocks").chunk_size * 16
+	var cscale = get_window().size.x / 1920
+	$Camera.scale = Vector2(cscale, cscale) / $Camera.zoom
 	
 func player_movement(delta):
 	velocity.x = Input.get_axis("A", "D") * 128
@@ -64,14 +66,16 @@ func zoom_in():
 	zoom += zoom / 10
 	if zoom > Vector2(10, 10): zoom = Vector2(10, 10)
 	$Camera.zoom = zoom
-	$Camera.scale = Vector2(1, 1) / $Camera.zoom
+	var cscale = get_window().size.x / 1920
+	$Camera.scale = Vector2(cscale, cscale) / $Camera.zoom
 		
 func zoom_out():
 	zoom = $Camera.zoom
 	zoom -= zoom / 10
 	if zoom < Vector2(0.1, 0.1): zoom = Vector2(0.1, 0.1)
 	$Camera.zoom = zoom
-	$Camera.scale = Vector2(1, 1) / $Camera.zoom
+	var cscale = get_window().size.x / 1920
+	$Camera.scale = Vector2(cscale, cscale) / $Camera.zoom
 		
 func soft_collision():
 	for entity in root.get_node("Entities").get_children() + root.get_node("Players").get_children():
@@ -82,9 +86,6 @@ func soft_collision():
 		else: soft_collision_velocity.x = 0
 		
 func _process(delta: float) -> void:
-	player_movement(delta)
-	block_clicked()
-	soft_collision()
 	current_pos = Vector2i(position / chunk_size) * chunk_size
 	prev_zoom = zoom
 	if Input.is_action_pressed("Zoom"): camera_zoom()
@@ -94,4 +95,8 @@ func _process(delta: float) -> void:
 		root.get_node("Blocks").generate()
 	prev_pos = current_pos
 	velocity += soft_collision_velocity
-	move_and_slide()
+	if root.get_node("Blocks").initialised:
+		player_movement(delta)
+		block_clicked()
+		soft_collision()
+		move_and_slide()
