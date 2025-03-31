@@ -1,0 +1,52 @@
+[gd_scene load_steps=6 format=3 uid="uid://m5786qdg12c8"]
+
+[sub_resource type="Gradient" id="Gradient_nw1tn"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.7)
+colors = PackedColorArray(1, 0, 0, 1, 1, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ugi7l"]
+gradient = SubResource("Gradient_nw1tn")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[sub_resource type="Curve" id="Curve_4t6vm"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.669118, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_kwbni"]
+curve = SubResource("Curve_4t6vm")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_e800w"]
+spread = 180.0
+initial_velocity_max = 256.0
+gravity = Vector3(0, 256, 0)
+tangential_accel_min = -2.23517e-06
+tangential_accel_max = -2.23517e-06
+damping_min = 100.0
+damping_max = 100.0
+scale_min = 0.06
+scale_max = 0.06
+alpha_curve = SubResource("CurveTexture_kwbni")
+hue_variation_min = -0.1
+hue_variation_max = 0.1
+collision_mode = 1
+collision_friction = 0.5
+collision_bounce = 0.0
+collision_use_scale = true
+
+[node name="Blood_Particle_Emitter" type="GPUParticles2D"]
+top_level = true
+z_index = 16
+emitting = false
+amount = 256
+texture = SubResource("GradientTexture2D_ugi7l")
+lifetime = 4.0
+one_shot = true
+explosiveness = 1.0
+fixed_fps = 120
+trail_enabled = true
+trail_lifetime = 0.25
+trail_sections = 2
+trail_section_subdivisions = 1
+process_material = SubResource("ParticleProcessMaterial_e800w")

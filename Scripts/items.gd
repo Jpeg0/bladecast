@@ -1,65 +1,75 @@
 extends Node
 
-const items = \
-{
+const items = {
+	
+	"ice": {
+		"key": "ice",
+		"name": "Ice",
+		"max_stack_size": 256,
+		"block": true
+	},
+	
+	"snow": {
+		"key": "snow",
+		"name": "Snow",
+		"max_stack_size": 256,
+		"block": true
+	},
+	
+	"moss": {
+		"key": "moss",
+		"name": "Moss",
+		"max_stack_size": 256,
+		"block": true
+	},
+	
+	"sand": {
+		"key": "sand",
+		"name": "Sand",
+		"max_stack_size": 256,
+		"block": true
+	},
+	
 	"coal_ore": {
 		"key": "coal_ore",
 		"name": "Coal Ore",
 		"max_stack_size": 256,
-		"block":
-		{
-			"atlas": Vector2i(0, 0),
-			"drop": "coal_ore",
-			"drop_amount": 1,
-		}
+		"block": true
 	},
 	
 	"dirt": {
 		"key": "dirt",
 		"name": "Dirt",
 		"max_stack_size": 256,
-		"block":
-		{
-			"atlas": Vector2i(1, 0),
-			"drop": "dirt",
-			"drop_amount": 1,
-		}
+		"block": true
 	},
 	
 	"grass": {
 		"key": "grass",
 		"name": "Grass",
 		"max_stack_size": 256,
-		"block":
-		{
-			"atlas": Vector2i(2, 0),
-			"drop": "grass",
-			"drop_amount": 1,
-		}
+		"block": true
+	},
+	
+	"hahahha": {
+		"key": "hahahha",
+		"name": "Hahahha",
+		"max_stack_size": 256,
+		"block": true
 	},
 	
 	"iron_ore": {
 		"key": "iron_ore",
 		"name": "Iron Ore",
 		"max_stack_size": 256,
-		"block":
-		{
-			"atlas": Vector2i(3, 0),
-			"drop": "iron_ore",
-			"drop_amount": 1,
-		}
+		"block": true
 	},
 	
 	"stone": {
 		"key": "stone",
 		"name": "Stone",
 		"max_stack_size": 256,
-		"block":
-		{
-			"atlas": Vector2i(4, 0),
-			"drop": "stone",
-			"drop_amount": 1,
-		}
+		"block": true
 	},
 	
 	"wooden_pickaxe": {

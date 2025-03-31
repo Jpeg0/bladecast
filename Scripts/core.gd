@@ -4,6 +4,7 @@ var spawnpoint
 var player
 var cam
 var peer
+var player_client = preload("res://Scenes/Entities/Client/PlayerClient.tscn")
 
 func _ready() -> void:
 	spawn_player()
@@ -23,7 +24,7 @@ func spawn_player():
 	$Blocks.player = player
 	
 func _on_peer_connected(id):
-	peer = load("res://Scenes/Entities/Client/PlayerClient.tscn").instantiate()
+	peer = player_client.instantiate()
 	peer.name = str(id)
 	$Players.add_child(peer)
 	if multiplayer.is_server():

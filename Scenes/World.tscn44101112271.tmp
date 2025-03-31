@@ -1,0 +1,72 @@
+[gd_scene load_steps=10 format=3 uid="uid://dqpom6rwf3e5h"]
+
+[ext_resource type="Script" uid="uid://rdipt5lyh84u" path="res://Scripts/core.gd" id="1_5cjrv"]
+[ext_resource type="PackedScene" uid="uid://dg7s1fbyyh3f5" path="res://Scenes/Entities/Player.tscn" id="2_5nsto"]
+[ext_resource type="Script" uid="uid://d2c1e3gux2yt" path="res://Scripts/generate.gd" id="2_gjpho"]
+[ext_resource type="PackedScene" uid="uid://dcl1tc71mvf4q" path="res://Scenes/Entities/zombie.tscn" id="4_p70al"]
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_p70al"]
+polygon = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_gjpho"]
+load_path = "res://.godot/imported/stone.png-0f1483b182ee83792ecdd4c4fe3d04dc.ctex"
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_45d1s"]
+texture = SubResource("CompressedTexture2D_gjpho")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+0:0/0/occlusion_layer_0/polygon_0/polygon = SubResource("OccluderPolygon2D_p70al")
+0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+
+[sub_resource type="TileSet" id="TileSet_y7y61"]
+tile_size = Vector2i(32, 32)
+occlusion_layer_0/light_mask = 1
+physics_layer_0/collision_layer = 1
+sources/0 = SubResource("TileSetAtlasSource_45d1s")
+
+[sub_resource type="Environment" id="Environment_5nsto"]
+background_mode = 3
+tonemap_mode = 3
+glow_enabled = true
+glow_normalized = true
+glow_intensity = 0.5
+glow_bloom = 0.1
+glow_blend_mode = 1
+
+[node name="World" type="Node2D"]
+script = ExtResource("1_5cjrv")
+
+[node name="Blocks" type="Node2D" parent="."]
+script = ExtResource("2_gjpho")
+
+[node name="Foreground_Blocks" type="TileMapLayer" parent="Blocks"]
+light_mask = 2
+rendering_quadrant_size = 32
+collision_enabled = false
+
+[node name="Background_Blocks" type="TileMapLayer" parent="Blocks"]
+modulate = Color(0.466667, 0.466667, 0.466667, 1)
+z_index = -1
+occlusion_enabled = false
+rendering_quadrant_size = 32
+collision_enabled = false
+
+[node name="Collision" type="TileMapLayer" parent="Blocks"]
+modulate = Color(1, 1, 1, 0)
+self_modulate = Color(1, 1, 1, 0)
+visibility_layer = 0
+tile_set = SubResource("TileSet_y7y61")
+rendering_quadrant_size = 32
+
+[node name="Entities" type="Node2D" parent="."]
+
+[node name="Zombies" type="Node2D" parent="Entities"]
+
+[node name="0" parent="Entities/Zombies" instance=ExtResource("4_p70al")]
+
+[node name="Players" type="Node2D" parent="."]
+
+[node name="Player" parent="Players" instance=ExtResource("2_5nsto")]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_5nsto")
