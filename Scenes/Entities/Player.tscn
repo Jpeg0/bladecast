@@ -1,23 +1,64 @@
-[gd_scene load_steps=28 format=3 uid="uid://dg7s1fbyyh3f5"]
+[gd_scene load_steps=29 format=3 uid="uid://dg7s1fbyyh3f5"]
 
 [ext_resource type="Script" uid="uid://mxtrwvrx632y" path="res://Scripts/player.gd" id="1_agccv"]
 [ext_resource type="Script" uid="uid://sre3fym8hqv7" path="res://Scripts/camera.gd" id="2_3m754"]
 [ext_resource type="PackedScene" uid="uid://cq2wjfogcock5" path="res://Scenes/Slot.tscn" id="2_v402d"]
 [ext_resource type="Script" uid="uid://bm6ikew2fgko3" path="res://Scripts/gui.gd" id="3_yu0ev"]
 [ext_resource type="Script" uid="uid://cdckk37nkrt3t" path="res://Scripts/debug_menu.gd" id="4_86atj"]
+[ext_resource type="FontFile" uid="uid://n1art4b3xn17" path="res://Fonts/Bladetype.ttf" id="5_46t5s"]
 [ext_resource type="LabelSettings" uid="uid://giaqkosiiy3j" path="res://LabelSettings/Default.tres" id="5_86atj"]
 [ext_resource type="LabelSettings" uid="uid://bn2mlveambc0m" path="res://LabelSettings/Slot.tres" id="6_yu0ev"]
 [ext_resource type="Script" uid="uid://dk58khdrvyluf" path="res://Scripts/shader_controller.gd" id="7_rsj4h"]
 [ext_resource type="Script" uid="uid://dj0qh3hrje81q" path="res://Components/Health.gd" id="7_td8ue"]
-[ext_resource type="Shader" uid="uid://bufey1f3dc0px" path="res://Shaders/heat_waves.gdshader" id="8_km4ui"]
 [ext_resource type="Texture2D" uid="uid://dvsj56ybq7o6r" path="res://Textures/Items/wooden_sword.png" id="11_3m754"]
 [ext_resource type="Script" uid="uid://cduuk8wn0dp12" path="res://Scripts/item_functions.gd" id="11_wmg1a"]
-[ext_resource type="AudioStream" uid="uid://bcu1kvcy030qd" path="res://Sounds/SoundEffects/HitFlesh.wav" id="14_46t5s"]
+[ext_resource type="AudioStream" uid="uid://dug3icasi88m" path="res://Sounds/Music/NoTimeToBleed-Full.wav" id="13_3m754"]
+
+[sub_resource type="Shader" id="Shader_46t5s"]
+code = "shader_type canvas_item;
+
+uniform int strength: hint_range(1, 10) = 32110;
+
+float gauss(int x, int y){
+	return exp(-float(x * x + y * y) / 2.) / (2. * PI);
+}
+
+void fragment() {
+	int x = int(UV.x / TEXTURE_PIXEL_SIZE.x);
+	int y = int(UV.y / TEXTURE_PIXEL_SIZE.y);
+	int i_min = max(x - strength, 0);
+	int i_max = min(x + strength + 1, int(1./TEXTURE_PIXEL_SIZE.x));
+	int i_diff = i_max - i_min;
+	int j_min = max(y - strength, 0);
+	int j_max = min(y + strength + 1, int(1./TEXTURE_PIXEL_SIZE.y));
+	int j_diff = j_max - j_min;
+	// Should be equal to (strength * 2 + 1)^2
+	vec4 weights[9];
+	vec4 total = vec4(0., 0., 0., 0.);
+	for(int i = i_min; i < i_max; i++){
+		for(int j = j_min; j < j_max; j++){
+			vec4 weight = vec4(
+				gauss(i-x, y-j),
+				gauss(i-x, y-j),
+				gauss(i-x, y-j),
+				gauss(i-x, y-j)
+			);
+			weights[j-j_min + (i-i_min) * (j_max-j_min)] = weight;
+			total += weight;
+		}
+	}
+	vec4 color_total = vec4(0., 0., 0., 0.);
+	for(int k = 0; k < weights.length(); k++){
+		weights[k] /= total;
+		weights[k] *= texture(TEXTURE, (UV / TEXTURE_PIXEL_SIZE + vec2(float(k / i_diff), float(k % i_diff))) * TEXTURE_PIXEL_SIZE);
+		color_total += weights[k];
+	}
+	COLOR = color_total;
+}"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rsj4h"]
-shader = ExtResource("8_km4ui")
-shader_parameter/frequency = 16.0
-shader_parameter/speed = 0.0
+shader = SubResource("Shader_46t5s")
+shader_parameter/strength = 1
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2tapu"]
 size = Vector2(24, 56)
@@ -59,7 +100,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector2(12, -26)]
+"values": [Vector2(12, -32)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -130,8 +171,9 @@ gradient = SubResource("Gradient_v402d")
 width = 24
 height = 56
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_46t5s"]
-size = Vector2(80, 56)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3m754"]
+radius = 4.94975
+height = 46.6691
 
 [node name="Player" type="CharacterBody2D"]
 z_index = 1
@@ -175,7 +217,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.239174, 0.690075, 0.82446, 1)
 
-[node name="GUI" type="Control" parent="Camera/OffsetNegator"]
+[node name="GUI" type="Control" parent="Camera/OffsetNegator" node_paths=PackedStringArray("player")]
 z_index = 10
 layout_mode = 3
 anchors_preset = 0
@@ -183,10 +225,19 @@ offset_top = 1.0
 offset_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("3_yu0ev")
+player = NodePath("../../..")
 
 [node name="Inventory" type="Control" parent="Camera/OffsetNegator/GUI"]
 visible = false
 anchors_preset = 0
+
+[node name="BackgroundOverlay" type="ColorRect" parent="Camera/OffsetNegator/GUI/Inventory"]
+layout_mode = 0
+offset_left = -960.0
+offset_top = -540.0
+offset_right = 960.0
+offset_bottom = 540.0
+color = Color(0, 0, 0, 0.392157)
 
 [node name="Background" type="ColorRect" parent="Camera/OffsetNegator/GUI/Inventory"]
 light_mask = 0
@@ -389,6 +440,48 @@ offset_top = 36.0
 offset_right = 304.0
 offset_bottom = 100.0
 
+[node name="PauseMenu" type="Control" parent="Camera/OffsetNegator/GUI"]
+visible = false
+z_index = 20
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="BackgroundOverlay" type="ColorRect" parent="Camera/OffsetNegator/GUI/PauseMenu"]
+layout_mode = 0
+offset_left = -960.0
+offset_top = -540.0
+offset_right = 960.0
+offset_bottom = 540.0
+color = Color(0, 0, 0, 0.392157)
+
+[node name="Resume" type="Button" parent="Camera/OffsetNegator/GUI/PauseMenu"]
+layout_mode = 0
+offset_left = -36.0
+offset_top = -64.0
+offset_right = 36.0
+offset_bottom = -32.0
+theme_override_fonts/font = ExtResource("5_46t5s")
+text = "resume"
+
+[node name="Options" type="Button" parent="Camera/OffsetNegator/GUI/PauseMenu"]
+layout_mode = 0
+offset_left = -41.0
+offset_top = -16.0
+offset_right = 41.0
+offset_bottom = 16.0
+theme_override_fonts/font = ExtResource("5_46t5s")
+text = "options"
+
+[node name="Quit" type="Button" parent="Camera/OffsetNegator/GUI/PauseMenu"]
+layout_mode = 0
+offset_left = -24.0
+offset_top = 32.0
+offset_right = 24.0
+offset_bottom = 64.0
+theme_override_fonts/font = ExtResource("5_46t5s")
+text = "quit"
+
 [node name="HUD" type="Control" parent="Camera/OffsetNegator"]
 z_index = 10
 layout_mode = 3
@@ -587,6 +680,16 @@ offset_bottom = 1080.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0)
 
+[node name="Blur" type="CanvasLayer" parent="Camera/OffsetNegator/Shaders"]
+visible = false
+
+[node name="Shader" type="ColorRect" parent="Camera/OffsetNegator/Shaders/Blur"]
+material = SubResource("ShaderMaterial_rsj4h")
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
+
 [node name="Effects" type="Control" parent="Camera/OffsetNegator"]
 layout_mode = 3
 anchors_preset = 0
@@ -651,9 +754,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = 11.5
-offset_top = -26.5
+offset_top = -32.5
 offset_right = 43.5
-offset_bottom = 5.5
+offset_bottom = -0.5
 grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(0, 32)
@@ -661,20 +764,22 @@ mouse_filter = 2
 texture = ExtResource("11_3m754")
 script = ExtResource("11_wmg1a")
 
-[node name="CollisionArea" type="Area2D" parent="Texture"]
-position = Vector2(12, -32)
+[node name="CollisionArea" type="Area2D" parent="Texture/Held_Item"]
 collision_mask = 2
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Texture/CollisionArea"]
-position = Vector2(16, 32)
-shape = SubResource("RectangleShape2D_46t5s")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Texture/Held_Item/CollisionArea"]
+position = Vector2(18, 14)
+rotation = 0.785398
+shape = SubResource("CapsuleShape2D_3m754")
 debug_color = Color(0, 0.6, 0.701961, 0)
 
 [node name="Audioplayer" type="Node2D" parent="."]
 position = Vector2(0, -1)
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="Audioplayer"]
-position = Vector2(640, 0)
-stream = ExtResource("14_46t5s")
-max_distance = 2048.0
-panning_strength = 4.0
+stream = ExtResource("13_3m754")
+bus = &"Music"
+
+[connection signal="pressed" from="Camera/OffsetNegator/GUI/PauseMenu/Resume" to="Camera/OffsetNegator/GUI" method="resume_pressed"]
+[connection signal="pressed" from="Camera/OffsetNegator/GUI/PauseMenu/Options" to="Camera/OffsetNegator/GUI" method="options_pressed"]
+[connection signal="pressed" from="Camera/OffsetNegator/GUI/PauseMenu/Quit" to="Camera/OffsetNegator/GUI" method="quit_pressed"]

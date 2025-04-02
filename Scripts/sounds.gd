@@ -7,26 +7,31 @@ const sounds = {
 		"key": "Swing",
 		"node_path": "SoundEffects/Swing",
 		"path": "Sounds/SoundEffects/Swing.wav",
+		"bus": "SFX",
 	},
 	"HitFlesh": {
 		"key": "HitFlesh",
 		"node_path": "SoundEffects/HitFlesh",
 		"path": "Sounds/SoundEffects/HitFlesh.wav",
+		"bus": "SFX",
 	},
 	"Impact": {
 		"key": "Impact",
 		"node_path": "SoundEffects/Impact",
 		"path": "Sounds/SoundEffects/Impact.wav",
+		"bus": "SFX",
 	},
 	"FirstLight-Full": {
 		"key": "FirstLight-Full",
 		"node_path": "Music/FirstLight-Full",
 		"path": "Sounds/Music/FirstLight-Full.wav",
+		"bus": "Music",
 	},
 	"NoTimeToBleed-Full": {
 		"key": "NoTimeToBleed-Full",
 		"node_path": "Music/NoTimeToBleed-Full",
 		"path": "Sounds/Music/NoTimeToBleed-Full.wav",
+		"bus": "Music",
 	},
 }
 
@@ -55,6 +60,7 @@ func _ready() -> void:
 			
 			if sound["key"] in sound_pools["Ambient_Default"]: sound_player.connect("finished", Callable(self, "play_ambient_default"))
 			
+			sound_player.bus = sound["bus"]
 			sound_player.max_polyphony = 4
 			sound_player.max_distance = 2048
 			sound_player.panning_strength = 4.0

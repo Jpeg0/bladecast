@@ -29,12 +29,8 @@ sources/0 = SubResource("TileSetAtlasSource_45d1s")
 
 [sub_resource type="Environment" id="Environment_5nsto"]
 background_mode = 3
-ssao_enabled = true
-ssao_radius = 16.0
-ssao_intensity = 16.0
-ssao_detail = 5.0
-ssao_horizon = 1.0
 glow_enabled = true
+glow_blend_mode = 1
 
 [node name="World" type="Node2D"]
 script = ExtResource("1_5cjrv")
@@ -56,8 +52,6 @@ rendering_quadrant_size = 32
 collision_enabled = false
 
 [node name="Collision" type="TileMapLayer" parent="Blocks"]
-modulate = Color(1, 1, 1, 0)
-self_modulate = Color(1, 1, 1, 0)
 visibility_layer = 0
 tile_set = SubResource("TileSet_y7y61")
 rendering_quadrant_size = 32

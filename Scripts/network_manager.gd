@@ -24,6 +24,8 @@ func send_entity_update(entity, update_type, data):
 func update_entity(entity, update_type, data):
 	if update_type == "Component":
 		get_tree().get_current_scene().get_node("Entities/" + entity).get_node("Components/" + data[0]).callv(data[1], data[2])
+	if update_type == "Property":
+		get_tree().get_current_scene().get_node("Entities/" + entity).set(data[0], data[1])
 	
 @rpc("any_peer")
 func update_block(layer, erase, block, block_id):

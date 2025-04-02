@@ -4,6 +4,7 @@ var inventory = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
 var selected_item = {}
 var selected_hotbar_slot = 0
 var hud
+@export var player: CharacterBody2D
 
 func _ready() -> void:
 	hud = get_parent().get_node("HUD")
@@ -20,9 +21,26 @@ func _process(_delta: float) -> void:
 	hotbar_scroll()
 	hud.get_node("Selected_Item").position = get_local_mouse_position() - Vector2(32, 32)
 	if Input.is_action_just_pressed("Inventory"):
-		$Inventory.visible = !$Inventory.visible
+		if !$PauseMenu.visible:
+			$Inventory.visible = !$Inventory.visible
+			player.can_move = !$Inventory.visible
 	if Input.is_action_just_pressed("Pause"):
-		$Inventory.visible = false
+		if $Inventory.visible:
+			$Inventory.visible = false
+			player.can_move = true
+		elif $PauseMenu.visible:
+			LocalData.paused = false
+		else:
+			LocalData.paused = true
+			
+	if LocalData.paused:
+		$PauseMenu.visible = true
+		player.can_move = false
+		AudioServer.set_bus_bypass_effects(AudioServer.get_bus_index("Effect_Paused"), false)
+	else:
+		$PauseMenu.visible = false
+		player.can_move = true
+		AudioServer.set_bus_bypass_effects(AudioServer.get_bus_index("Effect_Paused"), true)
 		
 func hotbar_scroll():
 	if not Input.is_action_pressed("Zoom"):
@@ -56,9 +74,9 @@ func update_slot(slot):
 			hotbar_slot.get_node("Amount").text = ""
 			inventory[slot].clear()
 		if slot == selected_hotbar_slot and inventory[selected_hotbar_slot].has("key") and AssetManager.cache.has(inventory[slot]["key"]):
-			get_parent().get_parent().get_parent().get_node("Texture/Held_Item").texture = AssetManager.cache[inventory[slot]["key"]]
-		elif !inventory[selected_hotbar_slot].has("key"): get_parent().get_parent().get_parent().get_node("Texture/Held_Item").texture = null
-		elif inventory[selected_hotbar_slot].has("key") and !AssetManager.cache.has(inventory[slot]["key"]): get_parent().get_parent().get_parent().get_node("Texture/Held_Item").texture = AssetManager.cache["null"]
+			player.get_node("Texture/Held_Item").texture = AssetManager.cache[inventory[slot]["key"]]
+		elif !inventory[selected_hotbar_slot].has("key"): player.get_node("Texture/Held_Item").texture = null
+		elif inventory[slot].has("key") and inventory[selected_hotbar_slot].has("key") and !AssetManager.cache.has(inventory[slot]["key"]): player.get_node("Texture/Held_Item").texture = AssetManager.cache["null"]
 	else:
 		var inventory_slot = get_node("Inventory/Slots").get_children()[slot - 9]
 		if inventory[slot].has("key") and inventory[slot].amount > 0:
@@ -187,3 +205,14 @@ func slot_clicked(event: InputEvent, slot: int):
 			hud.get_node("Selected_Item/Amount").text = ""
 			selected_item.clear()
 		update_slot(slot)
+
+
+func resume_pressed() -> void:
+	LocalData.paused = false
+
+
+func options_pressed() -> void:
+	pass
+
+func quit_pressed() -> void:
+	get_tree().quit()

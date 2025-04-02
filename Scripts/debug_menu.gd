@@ -5,4 +5,4 @@ func _process(_delta: float) -> void:
 	if visible:
 		$Left/Fps.text = "fps: " + str(Engine.get_frames_per_second())
 		$Left/Position.text = "position: " + str(Vector2i(get_parent().get_parent().get_parent().get_parent().position * 100) / 3200)
-		$Left/Velocity.text = "position: " + str(Vector2i(get_parent().get_parent().get_parent().get_parent().velocity))
+		$Left/Velocity.text = "velocity: " + str(Vector2i(get_parent().get_parent().get_parent().get_parent().velocity))

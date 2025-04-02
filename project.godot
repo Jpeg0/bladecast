@@ -17,7 +17,7 @@ boot_splash/bg_color=Color(0, 0, 0, 1)
 
 [audio]
 
-buses/default_bus_layout="res://AudioBuses/Master.tres"
+buses/default_bus_layout="res://AudioBuses/Default.tres"
 
 [autoload]
 
@@ -26,6 +26,7 @@ Items="*res://Scripts/items.gd"
 AssetManager="*res://Scripts/asset_manager.gd"
 Blocks="*res://Scripts/blocks.gd"
 Sounds="*res://Scripts/sounds.gd"
+LocalData="*res://Scripts/local_data.gd"
 
 [display]
 

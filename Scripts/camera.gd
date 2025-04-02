@@ -5,7 +5,7 @@ extends Camera2D
 var rng = RandomNumberGenerator.new()
 var camera_shake_strength: float = 0.0
 
-func camera_shake(camera_shake_time):
+func camera_shake():
 	camera_shake_strength = random_strength
 
 func _process(delta: float) -> void:

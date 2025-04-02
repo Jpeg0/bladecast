@@ -6,20 +6,21 @@ var min_distance: float
 var entities
 var deloaded: bool = false
 var tilemap
-var follow_range = 256
+var follow_range = 2048
 var can_move = true
+var knockback_velocity = Vector2(0, 0)
+var movespeed = 96
+var friction = 2048
+var acceleration = 256
 
 func _ready() -> void:
 	entities = get_tree().get_current_scene().get_node("Entities")
 	players_folder = get_tree().get_current_scene().get_node("Players")
 	tilemap = get_tree().get_current_scene().get_node("Blocks/Foreground_Blocks")
 	
-func _process(_delta: float) -> void:
-	if can_move:
-		move_and_slide()
-	
 func _physics_process(delta: float) -> void:
-	if not deloaded:
+	if not deloaded and not LocalData.paused and can_move:
+		
 		if not is_on_floor(): velocity.y += 680 * delta
 		else: velocity.y = 0
 		if velocity.y > 2048: velocity.y = 2048
@@ -31,10 +32,14 @@ func _physics_process(delta: float) -> void:
 				closest_player = player
 				min_distance = distance
 				
-		if min_distance < follow_range and abs(closest_player.position.x - position.x) > 28 or (min_distance > 64 and abs(closest_player.position.x - position.x) > 4):
+		if min_distance < follow_range and (abs(closest_player.position.x - position.x) > 28 or (min_distance > 64 and abs(closest_player.position.x - position.x) > 4)):
 			
 			var dir: int = sign(closest_player.position.x - position.x)
-			velocity.x = dir * 96
+			if dir != 0: velocity.x = velocity.move_toward(Vector2(movespeed * dir, velocity.y), acceleration * delta).x
+			
+				
+			velocity.x = clamp(velocity.x, -movespeed, movespeed)
+			
 			$BlockCheck.target_position = Vector2(dir * 56, 0)
 			$BlockCheck2.target_position = Vector2(dir * 56, 0)
 			$BlockCheck3.target_position = Vector2(dir * 56, 0)
@@ -50,6 +55,13 @@ func _physics_process(delta: float) -> void:
 				elif not $BlockCheck3.is_colliding() or block3_dist > block1_dist: velocity.y = -232
 					
 					
-		else: velocity.x = 0
+		else: velocity.x = velocity.move_toward(Vector2.ZERO, friction * delta).x
+		
+		knockback_velocity *= 0.95
+		
+		velocity += knockback_velocity
 		
 		if is_on_wall() and not is_on_floor(): velocity.x = 0
+	else: velocity = Vector2.ZERO
+	
+	move_and_slide()

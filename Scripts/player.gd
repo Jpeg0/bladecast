@@ -14,9 +14,12 @@ var current_pos
 var prev_zoom
 var gui
 var gamemode = "Survival"
-var dir = 0
 var can_move = true
 var block_health
+var movespeed = 256
+var friction = 2048
+var acceleration = 2048
+var use_friction = false
 
 func _ready() -> void:
 	Sounds.audio_player = $Audioplayer
@@ -34,14 +37,16 @@ func _ready() -> void:
 	
 func player_movement(delta):
 	if gamemode == "Survival":
-		var direction = Input.get_axis("A", "D")
-		if direction == -1:
-			dir = -1
-			$Texture.scale.x = -1
-		elif direction == 1:
-			dir = 1
-			$Texture.scale.x = 1
-		velocity.x = direction * 512
+		var dir = Input.get_axis("A", "D")
+		if dir != 0: $Texture.scale.x = dir
+			
+		if use_friction:
+			if dir != 0: velocity.x = velocity.move_toward(Vector2(movespeed * dir, velocity.y), acceleration * delta).x
+			else: velocity.x = velocity.move_toward(Vector2.ZERO, friction * delta).x
+		else:
+			velocity.x = dir * movespeed
+			
+		velocity.x = clamp(velocity.x, -movespeed, movespeed)
 		
 		if is_on_floor():
 			if velocity.y > 512:
@@ -52,6 +57,11 @@ func player_movement(delta):
 		else:
 			velocity.y += delta * 680
 			if velocity.y > 2048: velocity.y = 2048
+			
+		if is_on_wall():
+			for collision in range(get_slide_collision_count()):
+				if get_slide_collision(collision).get_normal().x == -dir:
+					velocity.x = 0
 			
 	elif gamemode == "Creative":
 		velocity.x = Input.get_axis("A", "D") * 512
@@ -70,18 +80,19 @@ func clicked():
 			$Selected_Block.position = (mouse_pos / 32).floor() * 32
 		else:
 			$Selected_Block.hide()
+	else:
+		$Selected_Block.hide()
 	
 	if not get_viewport().gui_get_hovered_control() and gui.inventory[gui.selected_hotbar_slot].has("key"):
 		var mapped_pos = foreground_blocks.local_to_map(mouse_pos)
+		var mapped_pos_source_id = foreground_blocks.get_cell_source_id(mapped_pos)
 		if Items.items[gui.inventory[gui.selected_hotbar_slot].key].has("pickaxe"):
 			if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-				
-				#if block_health <= 0:
-					var i = 0
-					for block in Blocks.blocks.values():
-						if i == foreground_blocks.get_cell_source_id(mapped_pos):
-							$Camera/OffsetNegator/GUI.give_item(block["key"], 1, null)
-						i += 1
+				var i = 0
+				for block in Blocks.blocks.values():
+					if i == mapped_pos_source_id:
+						$Camera/OffsetNegator/GUI.give_item(block["key"], 1, null)
+					i += 1
 					NetworkManager.send_block_update(1, true, mapped_pos, null)
 		elif Items.items[gui.inventory[gui.selected_hotbar_slot].key].has("block"):
 			if Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
