@@ -21,17 +21,16 @@ buses/default_bus_layout="res://AudioBuses/Default.tres"
 
 [autoload]
 
-NetworkManager="*res://Scripts/network_manager.gd"
-Items="*res://Scripts/items.gd"
-AssetManager="*res://Scripts/asset_manager.gd"
-Blocks="*res://Scripts/blocks.gd"
-Sounds="*res://Scripts/sounds.gd"
-LocalData="*res://Scripts/local_data.gd"
+NetworkManager="*res://Scripts/NetworkManager.gd"
+AssetManager="*res://Scripts/AssetManager.gd"
+AudioManager="*res://Scripts/AudioManager.gd"
+LocalData="*res://Scripts/LocalData.gd"
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+window/size/mode=3
 window/stretch/mode="canvas_items"
 window/vsync/vsync_mode=0
 
@@ -145,10 +144,13 @@ Number_9={
 
 [physics]
 
-common/physics_ticks_per_second=100
+common/physics_ticks_per_second=128
 common/physics_jitter_fix=0.0
 
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
+lights_and_shadows/directional_shadow/size=2048
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=0
+lights_and_shadows/positional_shadow/soft_shadow_filter_quality=0
 environment/defaults/default_clear_color=Color(0, 0, 0, 1)

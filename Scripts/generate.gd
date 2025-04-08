@@ -6,6 +6,7 @@ var coal_ore_noise = FastNoiseLite.new()
 var iron_ore_noise = FastNoiseLite.new()
 var generated_chunks = {}
 var updated_blocks = {}
+var completed_chunks = {}
 var erase
 var erase_background
 var block_id
@@ -24,24 +25,37 @@ var camera: Camera2D
 var chunk_size = 32
 var viewport_size: Vector2
 var cpos
+var root
+var foreground_blocks
+var background_blocks
+var collision_blocks
+var shadow_size = 2
+var min_x
+var max_x
+var min_y
+var max_y
 
 func reload():
 	if multiplayer.is_server():
 		world_seed = randi()
 		terrain_noise.seed = world_seed
-		spawnpoint = Vector2(8, terrain_noise.get_noise_1d(0) * 16)
+		spawnpoint = Vector2(8, terrain_noise.get_noise_1d(0) * 16 - 32)
 	initialised = false
 	generated_chunks = {}
 	updated_blocks = {}
-	$Foreground_Blocks.clear()
-	$Background_Blocks.clear()
-	$Collision.clear()
+	foreground_blocks.clear()
+	background_blocks.clear()
+	collision_blocks.clear()
 
 func _ready() -> void:
+	foreground_blocks = $Foreground_Blocks
+	background_blocks = $Background_Blocks
+	collision_blocks = $Collision_Blocks
+	collision_blocks.set_process(false)
+	root = get_parent()
 	if multiplayer.is_server():
 		world_seed = randi()
 		terrain_noise.seed = world_seed
-		spawnpoint = Vector2(8, terrain_noise.get_noise_1d(0) * 16)
 		
 func initialise():
 	terrain_noise.seed = world_seed
@@ -65,15 +79,17 @@ func initialise():
 	
 	biome_temperature_noise.seed = rng.randi()
 	
-	for block in Blocks.blocks.values():
-		block_ids[block.key] = block.id
+	for _block in AssetManager.blocks.values():
+		block_ids[_block.key] = _block.id
 	
+	player = root.player
 	camera = player.get_node("Camera")
 	initialised = true
 	player.get_node("Camera/OffsetNegator/HUD/Debug_Menu/Left/Seed").text = "seed: " + str(world_seed)
 	generate()
 	await get_tree().create_timer(0.1).timeout
-	player.position = spawnpoint + Vector2(0, -32)
+	spawnpoint = Vector2(8, terrain_noise.get_noise_1d(0) * 16 - 32)
+	player.position = spawnpoint
 
 func gen_surface_terrain(x: int, y: int, biome: Array) -> void:
 	var terrain_height = terrain_noise.get_noise_1d(x) * 16
@@ -137,37 +153,55 @@ func get_biome(x, _y):
 		
 	else:
 		
-		return ["Mountains", 1.66666666666666666 * -0.6 + 1]
+		return ["Mountains", 1.666 * -0.6 + 1]
 		
 	
-func force_generate(block, x, y):
+func force_generate(_block, x, y):
 	var biome = get_biome(x, y)
 	terrain_noise.frequency = 0.01
 	gen_surface_terrain(x, y, biome)
 	if block_id == block_ids["stone"]: gen_ores(x, y)
 	gen_caves(x, y)
 	
-	if erase: $Foreground_Blocks.erase_cell(block)
+	if erase: foreground_blocks.erase_cell(_block)
 	else:
-		$Foreground_Blocks.set_cell(block, block_id, Vector2i())
-		$Collision.set_cell(block, 0, Vector2i())
-	if erase_background: $Background_Blocks.erase_cell(block)
-	else: $Background_Blocks.set_cell(block, background_block_id, Vector2i())
+		foreground_blocks.set_cell(_block, block_id, Vector2i())
+		collision_blocks.set_cell(_block, 0, Vector2i())
+	if erase_background: background_blocks.erase_cell(_block)
+	else: background_blocks.set_cell(_block, background_block_id, Vector2i())
 		
 func generate() -> void:
 	if initialised:
-		for cx in range(floor((cpos.x - viewport_size.x) / chunk_size / 32) - 1, ceil((cpos.x + viewport_size.x) / chunk_size / 32) + 1):
-			for cy in range(floor((cpos.y - viewport_size.y) / chunk_size / 32) - 1, ceil((cpos.y + viewport_size.y) / chunk_size / 32) + 1):
-				var chunk = Vector2i(cx, cy)
-				if !generated_chunks.has(chunk):
+		min_x = floor((cpos.x - viewport_size.x) / chunk_size / 32) - 1
+		max_x = ceil((cpos.x + viewport_size.x) / chunk_size / 32) + 1
+		min_y = floor((cpos.y - viewport_size.y) / chunk_size / 32) - 1
+		max_y = ceil((cpos.y + viewport_size.y) / chunk_size / 32) + 1
+	
+		for cx in range(min_x, max_x):
+			for cy in range(min_y, max_y):
+				if !generated_chunks.has(Vector2i(cx, cy)):
+					var chunk = Vector2i(cx, cy)
 					generated_chunks[chunk] = chunk
 					await get_tree().process_frame
-					for x in range(chunk.x * chunk_size, (chunk.x + 1) * chunk_size):
-						for y in range(chunk.y * chunk_size, (chunk.y + 1) * chunk_size):
+					for x in range(cx * chunk_size, (cx + 1) * chunk_size):
+						for y in range(cy * chunk_size, (cy + 1) * chunk_size):
 							var block = Vector2i(x, y)
 							if !updated_blocks.has(block):
 								force_generate(block, x, y)
+
+								
+		for generated_chunk in generated_chunks.values():
+			if !(generated_chunk.x >= min_x - shadow_size and generated_chunk.x <= max_x + shadow_size and generated_chunk.y >= min_y - shadow_size and generated_chunk.y <= max_y + shadow_size):
+				generated_chunks.erase(generated_chunk)
+				await get_tree().process_frame
+				for x in range(generated_chunk.x * chunk_size, (generated_chunk.x + 1) * chunk_size):
+					for y in range(generated_chunk.y * chunk_size, (generated_chunk.y + 1) * chunk_size):
+						foreground_blocks.erase_cell(Vector2i(x, y))
+						background_blocks.erase_cell(Vector2i(x, y))
+						collision_blocks.erase_cell(Vector2i(x, y))
+						
+		$Collision_Blocks.update_internals()
 					
 func _process(_delta: float) -> void:
 	if not world_seed and NetworkManager.Ncache.has("world_seed"): world_seed = NetworkManager.Ncache["world_seed"]
-	if world_seed and player and not initialised: initialise()
+	if world_seed and not initialised: initialise()

@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://bjqasgbwcwqse"]
+
+[node name="AudioRaycast" type="RayCast2D"]
+top_level = true
+target_position = Vector2(0, -2048)
+
+[node name="LineOfSight" type="RayCast2D" parent="."]
+modulate = Color(0, 1, 0, 1)
+top_level = true
+enabled = false
+target_position = Vector2(0, 0)

@@ -1,8 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://dcl1tc71mvf4q"]
+[gd_scene load_steps=10 format=3 uid="uid://dcl1tc71mvf4q"]
 
-[ext_resource type="Script" uid="uid://gnwiq0658ddo" path="res://Scripts/zombie.gd" id="1_4c67f"]
+[ext_resource type="Script" uid="uid://gnwiq0658ddo" path="res://Scripts/Zombie.gd" id="1_4c67f"]
 [ext_resource type="PackedScene" uid="uid://m5786qdg12c8" path="res://Scenes/Particles/BloodParticleEmitter.tscn" id="2_8rqyt"]
 [ext_resource type="Script" uid="uid://dj0qh3hrje81q" path="res://Components/Health.gd" id="2_84odx"]
+[ext_resource type="Script" uid="uid://5cp2jk3hhhot" path="res://Components/Entity.gd" id="3_8rqyt"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_84odx"]
 size = Vector2(24, 56)
@@ -53,6 +54,11 @@ target_position = Vector2(0, 0)
 position = Vector2(0, -36)
 target_position = Vector2(0, 0)
 
+[node name="NavigationTimer" type="Timer" parent="."]
+process_callback = 0
+wait_time = 0.2
+autostart = true
+
 [node name="Healthbar" type="ColorRect" parent="."]
 offset_left = -21.0
 offset_top = -36.0
@@ -72,6 +78,12 @@ color = Color(0, 1, 0.501961, 1)
 script = ExtResource("2_84odx")
 metadata/_custom_type_script = "uid://dj0qh3hrje81q"
 
+[node name="Entity" type="Node2D" parent="Components"]
+script = ExtResource("3_8rqyt")
+metadata/_custom_type_script = "uid://5cp2jk3hhhot"
+
 [node name="Particles" type="Node2D" parent="."]
 
 [node name="Blood_Particle_Emitter" parent="Particles" instance=ExtResource("2_8rqyt")]
+
+[connection signal="timeout" from="NavigationTimer" to="." method="navigation"]

@@ -19,7 +19,7 @@ func item_function(item, _button):
 			detect_bodies_enabled = true
 			
 			get_parent().get_parent().get_node("AnimationPlayer").play("Swing")
-			Sounds.play_sound("Swing", 1.0, 0.1)
+			AudioManager.play_sound("Swing", 1.0, 0.1, LocalData.player.position)
 			
 			await get_tree().create_timer(item_max_cooldown).timeout
 			detect_bodies_enabled = false
@@ -31,7 +31,7 @@ func detect_bodies():
 	for body in $CollisionArea.get_overlapping_bodies():
 		if !body in detected_bodies:
 			detected_bodies.append(body)
-			Sounds.play_sound("HitFlesh", 1.0, 0.1)
+			AudioManager.play_sound("HitFlesh", 1.0, 0.1, body.position)
 			var knockback = Vector2(sign(body.position.x - get_parent().get_parent().position.x) * 64, 0.0)
 			NetworkManager.send_entity_update(body.get_parent().name + "/" + body.name, "Component", ["Health", "apply_damage", [1, "melee"]])
 			NetworkManager.send_entity_update(body.get_parent().name + "/" + body.name, "Property", ["knockback_velocity", knockback])
@@ -42,20 +42,19 @@ func detect_bodies():
 func _process(_delta: float) -> void: if detect_bodies_enabled: detect_bodies()
 		
 func impact_frame(body):
+	AudioManager.play_sound("Impact", 1.0, 0.1, body.position)
+	get_parent().use_parent_material = false
+	get_parent().z_index = 16
+	body.get_node("Texture").use_parent_material = false
+	body.get_node("Texture").z_index = 16
+	get_parent().get_parent().get_node("Camera/OffsetNegator/Effects/Impact").show()
+	await get_tree().create_timer(impact_frame_time).timeout 
 	if body:
-		Sounds.play_sound("Impact", 1.0, 0.1)
-		get_parent().use_parent_material = false
-		get_parent().z_index = 16
-		body.get_node("Texture").use_parent_material = false
-		body.get_node("Texture").z_index = 16
-		get_parent().get_parent().get_node("Camera/OffsetNegator/Effects/Impact").show()
-		await get_tree().create_timer(impact_frame_time).timeout 
-	if body:
-		get_parent().use_parent_material = true
-		get_parent().z_index = 0
 		body.get_node("Texture").use_parent_material = true
 		body.get_node("Texture").z_index = 0
-		get_parent().get_parent().get_node("Camera/OffsetNegator/Effects/Impact").hide()
+	get_parent().use_parent_material = true
+	get_parent().z_index = 0
+	get_parent().get_parent().get_node("Camera/OffsetNegator/Effects/Impact").hide()
 		
 func hitstop(body):
 	get_parent().get_parent().get_node("AnimationPlayer").pause()
@@ -63,5 +62,5 @@ func hitstop(body):
 	get_parent().get_parent().can_move = false
 	await get_tree().create_timer(hitstop_time).timeout 
 	get_parent().get_parent().get_node("AnimationPlayer").play()
-	body.can_move = true
+	if body: body.can_move = true
 	get_parent().get_parent().can_move = true

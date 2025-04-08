@@ -13,8 +13,8 @@ func _ready() -> void:
 			hud.get_node("Hotbar/Slots").get_child(i).gui_input.connect(slot_clicked.bind(i))
 		else:
 			$Inventory/Slots.get_child(i - 9).gui_input.connect(slot_clicked.bind(i))
-	give_item("wooden_pickaxe")
 	give_item("wooden_sword")
+	give_item("wooden_pickaxe")
 	give_item("dirt", 256)
 
 func _process(_delta: float) -> void:
@@ -65,24 +65,24 @@ func update_slot(slot):
 	if slot < 9:
 		var hotbar_slot = hud.get_node("Hotbar/Slots").get_children()[slot]
 		if inventory[slot].has("key") and inventory[slot].amount > 0:
-			if AssetManager.cache.has(inventory[slot]["key"]):
-				hotbar_slot.get_node("Item").texture = AssetManager.cache[inventory[slot]["key"]]
-			else: hotbar_slot.get_node("Item").texture = AssetManager.cache["null"]
+			if AssetManager.texture_cache.has(inventory[slot]["key"]):
+				hotbar_slot.get_node("Item").texture = AssetManager.texture_cache[inventory[slot]["key"]]["32"]
+			else: hotbar_slot.get_node("Item").texture = AssetManager.texture_cache["null"]
 			hotbar_slot.get_node("Amount").text = str(inventory[slot]["amount"])
 		else:
 			hotbar_slot.get_node("Item").texture = null
 			hotbar_slot.get_node("Amount").text = ""
 			inventory[slot].clear()
-		if slot == selected_hotbar_slot and inventory[selected_hotbar_slot].has("key") and AssetManager.cache.has(inventory[slot]["key"]):
-			player.get_node("Texture/Held_Item").texture = AssetManager.cache[inventory[slot]["key"]]
+		if slot == selected_hotbar_slot and inventory[selected_hotbar_slot].has("key") and AssetManager.texture_cache.has(inventory[slot]["key"]):
+			player.get_node("Texture/Held_Item").texture = AssetManager.texture_cache[inventory[slot]["key"]]["32"]
 		elif !inventory[selected_hotbar_slot].has("key"): player.get_node("Texture/Held_Item").texture = null
-		elif inventory[slot].has("key") and inventory[selected_hotbar_slot].has("key") and !AssetManager.cache.has(inventory[slot]["key"]): player.get_node("Texture/Held_Item").texture = AssetManager.cache["null"]
+		elif inventory[slot].has("key") and inventory[selected_hotbar_slot].has("key") and !AssetManager.texture_cache.has(inventory[slot]["key"]): player.get_node("Texture/Held_Item").texture = AssetManager.texture_cache["null"]
 	else:
 		var inventory_slot = get_node("Inventory/Slots").get_children()[slot - 9]
 		if inventory[slot].has("key") and inventory[slot].amount > 0:
-			if AssetManager.cache.has(inventory[slot]["key"]):
-				inventory_slot.get_node("Item").texture = AssetManager.cache[inventory[slot]["key"]]
-			else: inventory_slot.get_node("Item").texture = AssetManager.cache["null.png"]
+			if AssetManager.texture_cache.has(inventory[slot]["key"]):
+				inventory_slot.get_node("Item").texture = AssetManager.texture_cache[inventory[slot]["key"]]["32"]
+			else: inventory_slot.get_node("Item").texture = AssetManager.texture_cache["null"]
 			inventory_slot.get_node("Amount").text = str(inventory[slot]["amount"])
 		else:
 			inventory_slot.get_node("Item").texture = null
@@ -92,14 +92,14 @@ func update_slot(slot):
 func give_item(item, amount = 1, slot_index = null):
 	var repeat = false
 	var true_amount = amount
-	amount = clampi(amount, 1, Items.items[item].max_stack_size)
+	amount = clampi(amount, 1, AssetManager.items[item].max_stack_size)
 	true_amount -= amount
 	if true_amount > 0: repeat = true
 	
 	if not slot_index:
 		for i in range(inventory.size()):
 			var slot = inventory[i]
-			if slot.has("key") and slot.key == Items.items[item].key and slot.amount < Items.items[item].max_stack_size:
+			if slot.has("key") and slot.key == AssetManager.items[item].key and slot.amount < AssetManager.items[item].max_stack_size:
 				slot["amount"] += amount
 				update_slot(i)
 				
@@ -111,7 +111,7 @@ func give_item(item, amount = 1, slot_index = null):
 		for i in range(inventory.size()):
 			var slot = inventory[i]
 			if !slot.has("key"):
-				inventory[i] = {"key": Items.items[item].key, "amount": amount}
+				inventory[i] = {"key": AssetManager.items[item].key, "amount": amount}
 				update_slot(i)
 				
 				if repeat:
@@ -122,7 +122,7 @@ func give_item(item, amount = 1, slot_index = null):
 	else:
 		var slot = inventory[slot_index]
 		if !slot.has("key"):
-			inventory[slot_index] = {"key": Items.items[item].key, "amount": amount}
+			inventory[slot_index] = {"key": AssetManager.items[item].key, "amount": amount}
 			update_slot(slot_index)
 				
 			if repeat:
@@ -130,7 +130,7 @@ func give_item(item, amount = 1, slot_index = null):
 			else:
 				return
 					
-		elif slot.key == Items.items[item].key and slot.amount < Items.items[item].max_stack_size:
+		elif slot.key == AssetManager.items[item].key and slot.amount < AssetManager.items[item].max_stack_size:
 			slot["amount"] += amount
 			update_slot(slot_index)
 				
@@ -155,13 +155,13 @@ func slot_clicked(event: InputEvent, slot: int):
 		if inventory[slot].has("key") and selected_item.has("key"):
 			if inventory[slot].key == selected_item.key:
 				if !rmb:
-					var add_amount = min(selected_item.amount, Items.items[inventory[slot].key].max_stack_size - inventory[slot].amount)
+					var add_amount = min(selected_item.amount, AssetManager.items[inventory[slot].key].max_stack_size - inventory[slot].amount)
 					
 					inventory[slot].amount += add_amount
 					selected_item.amount -= add_amount
 					
 					if selected_item.amount > 0:
-						hud.get_node("Selected_Item").texture = AssetManager.cache[selected_item.key]
+						hud.get_node("Selected_Item").texture = AssetManager.texture_cache[selected_item.key]
 						hud.get_node("Selected_Item/Amount").text = str(selected_item.amount)
 					else:
 						hud.get_node("Selected_Item").texture = null
@@ -175,19 +175,19 @@ func slot_clicked(event: InputEvent, slot: int):
 				var temp = inventory[slot].duplicate()
 				inventory[slot] = selected_item.duplicate()
 				selected_item = temp
-				hud.get_node("Selected_Item").texture = AssetManager.cache[selected_item.key]
+				hud.get_node("Selected_Item").texture = AssetManager.texture_cache[selected_item.key]
 				hud.get_node("Selected_Item/Amount").text = str(selected_item["amount"])
 		elif inventory[slot].has("key"):
 			if !rmb:
 				selected_item = inventory[slot].duplicate()
-				hud.get_node("Selected_Item").texture = AssetManager.cache[selected_item.key]
+				hud.get_node("Selected_Item").texture = AssetManager.texture_cache[selected_item.key]
 				hud.get_node("Selected_Item/Amount").text = str(selected_item["amount"])
 				inventory[slot].clear()
 			else:
 				selected_item = inventory[slot].duplicate()
 				selected_item.amount = int(ceil(float(selected_item.amount) / 2))
 				inventory[slot].amount -= selected_item.amount
-				hud.get_node("Selected_Item").texture = AssetManager.cache[selected_item.key]
+				hud.get_node("Selected_Item").texture = AssetManager.texture_cache[selected_item.key]
 				hud.get_node("Selected_Item/Amount").text = str(selected_item["amount"])
 		elif selected_item.has("key"):
 			inventory[slot] = selected_item.duplicate()

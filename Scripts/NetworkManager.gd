@@ -33,15 +33,17 @@ func update_block(layer, erase, block, block_id):
 	if layer == 1:
 		if erase:
 			get_tree().get_current_scene().get_node("Blocks/Foreground_Blocks").erase_cell(block)
-			get_tree().get_current_scene().get_node("Blocks/Collision").erase_cell(block)
+			get_tree().get_current_scene().get_node("Blocks/Collision_Blocks").erase_cell(block)
 		else:
 			get_tree().get_current_scene().get_node("Blocks/Foreground_Blocks").set_cell(block, block_id, Vector2i())
-			get_tree().get_current_scene().get_node("Blocks/Collision").set_cell(block, 0, Vector2i())
+			get_tree().get_current_scene().get_node("Blocks/Collision_Blocks").set_cell(block, 0, Vector2i())
 	elif layer == 0:
 		if erase:
 			get_tree().get_current_scene().get_node("Blocks/Background_Blocks").erase_cell(block)
 		else:
 			get_tree().get_current_scene().get_node("Blocks/Background_Blocks").set_cell(block, block_id, Vector2i())
+		
+	get_tree().get_current_scene().get_node("Blocks/Collision_Blocks").update_internals()
 			
 @rpc("any_peer")
 func receive_data(variable, data):
