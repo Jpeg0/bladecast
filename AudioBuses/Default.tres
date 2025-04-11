@@ -6,6 +6,7 @@ cutoff_hz = 3000.0
 resonance = 0.75
 
 [resource]
+bus/0/volume_db = -30.1465
 bus/1/name = &"Effect_Paused"
 bus/1/solo = false
 bus/1/mute = false

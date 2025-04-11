@@ -140,7 +140,7 @@ func slot_clicked(event: InputEvent, slot: int):
 					selected_item.amount -= add_amount
 					
 					if selected_item.amount > 0:
-						hud.get_node("Selected_Item").texture = AssetManager.texture_cache[selected_item.key]
+						hud.get_node("Selected_Item").texture = AssetManager.texture_cache[selected_item.key]["32"]
 						hud.get_node("Selected_Item/Amount").text = str(selected_item.amount)
 					else:
 						hud.get_node("Selected_Item").texture = null
@@ -154,19 +154,19 @@ func slot_clicked(event: InputEvent, slot: int):
 				var temp = inventory[slot].duplicate()
 				inventory[slot] = selected_item.duplicate()
 				selected_item = temp
-				hud.get_node("Selected_Item").texture = AssetManager.texture_cache[selected_item.key]
+				hud.get_node("Selected_Item").texture = AssetManager.texture_cache[selected_item.key]["32"]
 				hud.get_node("Selected_Item/Amount").text = str(selected_item["amount"])
 		elif inventory[slot].has("key"):
 			if !rmb:
 				selected_item = inventory[slot].duplicate()
-				hud.get_node("Selected_Item").texture = AssetManager.texture_cache[selected_item.key]
+				hud.get_node("Selected_Item").texture = AssetManager.texture_cache[selected_item.key]["32"]
 				hud.get_node("Selected_Item/Amount").text = str(selected_item["amount"])
 				inventory[slot].clear()
 			else:
 				selected_item = inventory[slot].duplicate()
 				selected_item.amount = int(ceil(float(selected_item.amount) / 2))
 				inventory[slot].amount -= selected_item.amount
-				hud.get_node("Selected_Item").texture = AssetManager.texture_cache[selected_item.key]
+				hud.get_node("Selected_Item").texture = AssetManager.texture_cache[selected_item.key]["32"]
 				hud.get_node("Selected_Item/Amount").text = str(selected_item["amount"])
 		elif selected_item.has("key"):
 			inventory[slot] = selected_item.duplicate()
