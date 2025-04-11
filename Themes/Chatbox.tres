@@ -1,0 +1,14 @@
+[gd_resource type="Theme" load_steps=4 format=3 uid="uid://cxkysywnp0pyv"]
+
+[ext_resource type="FontFile" uid="uid://n1art4b3xn17" path="res://Fonts/Bladetype.ttf" id="1_yledq"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yledq"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wqw33"]
+bg_color = Color(0, 0, 0, 0.501961)
+
+[resource]
+LineEdit/font_sizes/font_size = 32
+LineEdit/fonts/font = ExtResource("1_yledq")
+LineEdit/styles/focus = SubResource("StyleBoxEmpty_yledq")
+LineEdit/styles/normal = SubResource("StyleBoxFlat_wqw33")

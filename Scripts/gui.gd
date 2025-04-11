@@ -19,31 +19,10 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	hotbar_scroll()
-	hud.get_node("Selected_Item").position = get_local_mouse_position() - Vector2(32, 32)
-	if Input.is_action_just_pressed("Inventory"):
-		if !$PauseMenu.visible:
-			$Inventory.visible = !$Inventory.visible
-			player.can_move = !$Inventory.visible
-	if Input.is_action_just_pressed("Pause"):
-		if $Inventory.visible:
-			$Inventory.visible = false
-			player.can_move = true
-		elif $PauseMenu.visible:
-			LocalData.paused = false
-		else:
-			LocalData.paused = true
-			
-	if LocalData.paused:
-		$PauseMenu.visible = true
-		player.can_move = false
-		AudioServer.set_bus_bypass_effects(AudioServer.get_bus_index("Effect_Paused"), false)
-	else:
-		$PauseMenu.visible = false
-		player.can_move = true
-		AudioServer.set_bus_bypass_effects(AudioServer.get_bus_index("Effect_Paused"), true)
-		
+	gui_menu_controller()
+	
 func hotbar_scroll():
-	if not Input.is_action_pressed("Zoom"):
+	if not Input.is_action_pressed("Zoom") and not $Chat/Chatbox.visible:
 		if Input.is_action_just_released("Scroll_Up"):
 			selected_hotbar_slot -= 1
 			if selected_hotbar_slot < 0: selected_hotbar_slot = 8
@@ -59,7 +38,7 @@ func hotbar_scroll():
 			selected_hotbar_slot = i - 1
 			hud.get_node("Selected_Hotbar_Slot").position.x = -272 + (selected_hotbar_slot * 68)
 			update_slot(selected_hotbar_slot)
-	get_parent().get_node("HUD/Selected_Hotbar_Slot")
+	hud.get_node("Selected_Item").position = get_local_mouse_position() - Vector2(32, 32)
 		
 func update_slot(slot):
 	if slot < 9:
@@ -205,14 +184,50 @@ func slot_clicked(event: InputEvent, slot: int):
 			hud.get_node("Selected_Item/Amount").text = ""
 			selected_item.clear()
 		update_slot(slot)
-
+		
+func gui_menu_controller():
+	if !LocalData.paused:
+		
+		if Input.is_action_just_pressed("Hide_HUD"):
+			get_parent().get_node("HUD").visible = !get_parent().get_node("HUD").visible
+		
+		if Input.is_action_just_pressed("Chat"):
+			$Chat/Chatbox.visible = !$Chat/Chatbox.visible
+			player.movement_inputs_enabled = !$Chat/Chatbox.visible
+			$Chat/Chatbox.grab_focus()
+			
+		if !$Chat/Chatbox.visible:
+			if Input.is_action_pressed("Zoom"):
+				player.camera_zoom()
+			
+			if Input.is_action_just_pressed("Reload"):
+				LocalData.blocks.reload()
+			
+			if Input.is_action_just_pressed("Inventory"):
+				$Inventory.visible = !$Inventory.visible
+				player.movement_inputs_enabled = !$Inventory.visible
+		
+	if Input.is_action_just_pressed("Pause"):
+		if $Inventory.visible:
+			$Inventory.visible = false
+			player.movement_inputs_enabled = true
+		elif $Chat/Chatbox.visible:
+			$Chat/Chatbox.visible = false
+			player.movement_inputs_enabled = true
+		else:
+			LocalData.paused = !LocalData.paused
+			
+	$PauseMenu.visible = LocalData.paused
+	player.can_move = !LocalData.paused
+	AudioServer.set_bus_bypass_effects(AudioServer.get_bus_index("Effect_Paused"), !LocalData.paused)
 
 func resume_pressed() -> void:
 	LocalData.paused = false
 
-
 func options_pressed() -> void:
-	pass
+	$PauseMenu.visible = false
+	#$OptionsMenu.visible = true
+	$OptionsMenu/Main.visible = true
 
 func quit_pressed() -> void:
 	get_tree().quit()

@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://dqpom6rwf3e5h"]
+[gd_scene load_steps=9 format=3 uid="uid://dqpom6rwf3e5h"]
 
 [ext_resource type="Script" uid="uid://dce3ibjsakncd" path="res://Scripts/Core.gd" id="1_gjpho"]
 [ext_resource type="PackedScene" uid="uid://dg7s1fbyyh3f5" path="res://Scenes/Entities/Player.tscn" id="2_5nsto"]
 [ext_resource type="Script" uid="uid://d2c1e3gux2yt" path="res://Scripts/Generate.gd" id="2_gjpho"]
+[ext_resource type="PackedScene" uid="uid://dcl1tc71mvf4q" path="res://Scenes/Entities/zombie.tscn" id="4_gjpho"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_gjpho"]
 polygon = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
@@ -53,3 +54,5 @@ rendering_quadrant_size = 32
 [node name="Player" parent="Entities/Players" instance=ExtResource("2_5nsto")]
 
 [node name="Zombies" type="Node2D" parent="Entities"]
+
+[node name="Zombie" parent="Entities/Zombies" instance=ExtResource("4_gjpho")]

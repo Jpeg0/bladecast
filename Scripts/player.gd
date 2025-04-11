@@ -3,6 +3,7 @@ extends CharacterBody2D
 const JumpStrength = 128
 var block_pos
 var player_reach = 128
+var collision_blocks
 var foreground_blocks
 var background_blocks
 var root: Node2D
@@ -25,6 +26,7 @@ var camera
 var selected_block
 var texture
 var in_loaded_chunk = false
+var movement_inputs_enabled = true
 
 func _ready() -> void:
 	LocalData.player = self
@@ -35,8 +37,13 @@ func _ready() -> void:
 	set_multiplayer_authority(multiplayer.get_unique_id())
 	root = get_tree().get_current_scene()
 	blocks = root.get_node("Blocks")
+	collision_blocks = root.get_node("Blocks/Collision_Blocks")
 	foreground_blocks = root.get_node("Blocks/Foreground_Blocks")
 	background_blocks = root.get_node("Blocks/Background_Blocks")
+	LocalData.blocks = root.get_node("Blocks")
+	LocalData.collision_blocks = root.get_node("Blocks/Collision_Blocks")
+	LocalData.foreground_blocks = root.get_node("Blocks/Foreground_Blocks")
+	LocalData.background_blocks = root.get_node("Blocks/Background_Blocks")
 	gui = camera.get_node("OffsetNegator/GUI")
 	blocks.viewport_size = get_viewport().get_visible_rect().size / camera.zoom / 2
 	blocks.cpos = camera.position + position
@@ -48,7 +55,8 @@ func _ready() -> void:
 	
 func player_movement(delta):
 	if gamemode == "Survival":
-		var dir = Input.get_axis("A", "D")
+		var dir = 0
+		if movement_inputs_enabled: dir = Input.get_axis("A", "D")
 		if dir != 0: $Texture.scale.x = dir
 			
 		if use_friction:
@@ -61,7 +69,7 @@ func player_movement(delta):
 		
 		if is_on_floor():
 			velocity.y = 0
-			if Input.is_action_pressed("Jump"):
+			if movement_inputs_enabled and Input.is_action_pressed("Jump"):
 				velocity.y = -232
 		else:
 			velocity.y += delta * 680
@@ -120,6 +128,7 @@ func camera_zoom() -> void:
 	elif Input.is_action_just_released("Scroll_Down"): zoom_out()
 	
 func zoom_in():
+	prev_zoom = zoom
 	zoom = camera.zoom
 	zoom += zoom / 10
 	if zoom > Vector2(8, 8): zoom = Vector2(8, 8)
@@ -129,6 +138,7 @@ func zoom_in():
 	blocks.queue_redraw()
 		
 func zoom_out():
+	prev_zoom = zoom
 	zoom = camera.zoom
 	zoom -= zoom / 10
 	if zoom < Vector2(0.25, 0.25): zoom = Vector2(0.25, 0.25)
@@ -138,10 +148,7 @@ func zoom_out():
 	blocks.queue_redraw()
 		
 func _process(delta: float) -> void:
-	if Input.is_action_just_pressed("Reload"): blocks.reload()
 	current_pos = Vector2i(position / chunk_size) * chunk_size
-	prev_zoom = zoom
-	if Input.is_action_pressed("Zoom"): camera_zoom()
 	if current_pos != prev_pos or zoom != prev_zoom:
 		blocks.viewport_size = get_viewport().get_visible_rect().size / camera.zoom / 2
 		blocks.cpos = camera.position + position
@@ -152,9 +159,11 @@ func _process(delta: float) -> void:
 		else: AssetManager.set_lod(32)
 		
 	prev_pos = current_pos
-	if can_move and in_loaded_chunk:
-		player_movement(delta)
-		clicked()
-		var v = velocity.y
-		move_and_slide()
-		velocity.y = v
+	if in_loaded_chunk:
+		if movement_inputs_enabled:
+			clicked()
+		if can_move:
+			player_movement(delta)
+			var v = velocity.y
+			move_and_slide()
+			velocity.y = v

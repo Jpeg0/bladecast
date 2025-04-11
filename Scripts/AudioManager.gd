@@ -43,7 +43,7 @@ func play_sound(Sound: String, BasePitch: float = 1.0, PitchVariation: float = 0
 			for bounce in range(bounces):
 				new_ray.force_raycast_update()
 				if new_ray.is_colliding():
-					if bounce >= 1: total_los_rays += 1
+					total_los_rays += 1
 					var los = new_ray.get_node("LineOfSight")
 					los.position = new_ray.get_collision_point()
 					los.target_position = Position - los.position
@@ -60,7 +60,11 @@ func play_sound(Sound: String, BasePitch: float = 1.0, PitchVariation: float = 0
 					
 			new_ray.queue_free()
 		
-		lowpass.cutoff_hz = (total_hits / total_los_rays) * 19000 + 1000
+		var muffle_amount = 0
+		
+		for i in range(int(LocalData.player.position.distance_to(Position) / 32) + 1): if LocalData.collision_blocks.get_cell_source_id(LocalData.collision_blocks.local_to_map(LocalData.collision_blocks.to_local(LocalData.player.position + (Position - LocalData.player.position).normalized() * (i * 32)))) != -1: muffle_amount += 1
+		
+		lowpass.cutoff_hz = 6000 * 0.6**(muffle_amount - 2)
 		delay.tap1_delay_ms = clamp((average_los_ray_length / total_los_rays) / (512.0 / total_los_rays), 0, 128)
 		delay.tap2_delay_ms = delay.tap1_delay_ms * 2
 		delay.tap1_level_db = ((delay.tap1_delay_ms / 3.0) + (total_hits / (audio_rays * 1.5))) / 2 - 52

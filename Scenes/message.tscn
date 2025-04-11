@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://cv1c48vty6enh"]
+
+[ext_resource type="FontFile" uid="uid://n1art4b3xn17" path="res://Fonts/Bladetype.ttf" id="1_au3y1"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_3m754"]
+font = ExtResource("1_au3y1")
+font_size = 32
+
+[node name="Message" type="Label"]
+custom_minimum_size = Vector2(960, 40)
+label_settings = SubResource("LabelSettings_3m754")
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Background" type="ColorRect" parent="."]
+z_index = -1
+layout_mode = 0
+offset_right = 960.0
+offset_bottom = 40.0
+color = Color(0, 0, 0, 0.501961)
